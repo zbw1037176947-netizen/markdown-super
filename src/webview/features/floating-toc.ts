@@ -7,17 +7,28 @@
 let tocContainer: HTMLElement | null = null;
 let tocList: HTMLElement | null = null;
 let tocItems: { el: HTMLElement; heading: HTMLElement }[] = [];
+let isCollapsed = false;
 
 export function initFloatingToc() {
   tocContainer = document.createElement("div");
   tocContainer.className = "floating-toc";
   tocContainer.innerHTML = `
-    <div class="floating-toc-header">Outline</div>
+    <div class="floating-toc-header">
+      <span>Outline</span>
+      <button class="floating-toc-toggle" title="Toggle outline">×</button>
+    </div>
     <div class="floating-toc-list"></div>
   `;
   document.body.appendChild(tocContainer);
 
   tocList = tocContainer.querySelector(".floating-toc-list")!;
+  const toggleBtn = tocContainer.querySelector(".floating-toc-toggle")!;
+
+  toggleBtn.addEventListener("click", () => {
+    isCollapsed = !isCollapsed;
+    tocContainer!.classList.toggle("collapsed", isCollapsed);
+    toggleBtn.textContent = isCollapsed ? "☰" : "×";
+  });
 
   window.addEventListener("scroll", onScroll, { passive: true });
 }

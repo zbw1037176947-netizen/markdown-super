@@ -791,6 +791,19 @@ body.theme-light .preview-search-btn:hover {
   display: none;
 }
 
+.floating-toc.collapsed {
+  width: auto;
+  max-height: none;
+}
+
+.floating-toc.collapsed .floating-toc-list {
+  display: none;
+}
+
+.floating-toc.collapsed .floating-toc-header {
+  border-bottom: none;
+}
+
 .floating-toc-header {
   padding: 6px 12px;
   font-size: 11px;
@@ -799,6 +812,23 @@ body.theme-light .preview-search-btn:hover {
   letter-spacing: 0.5px;
   color: var(--vscode-descriptionForeground, #888);
   border-bottom: 1px solid var(--vscode-editorWidget-border, #333);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.floating-toc-toggle {
+  background: transparent;
+  border: none;
+  color: var(--vscode-descriptionForeground, #888);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.floating-toc-toggle:hover {
+  color: var(--vscode-editor-foreground, #ccc);
 }
 
 .floating-toc-list {
