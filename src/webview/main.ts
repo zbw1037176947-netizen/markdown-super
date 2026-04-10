@@ -14,6 +14,7 @@ import { injectSourceLines } from "./plugins/source-line";
 import { frontmatterPlugin } from "./plugins/frontmatter";
 import { enhanceCodeBlocks } from "./renderers/code-block";
 import { initPreviewSearch } from "./features/search";
+import { initFloatingToc, updateFloatingToc } from "./features/floating-toc";
 import "./styles/preview.css";
 
 const vscode = acquireVsCodeApi();
@@ -61,8 +62,9 @@ injectSourceLines(md);
 const previewEl = document.getElementById("preview")!;
 const loadingEl = document.getElementById("loading")!;
 
-// ===== 初始化预览内搜索 =====
+// ===== 初始化预览内搜索 & 浮动 TOC =====
 initPreviewSearch(previewEl);
+initFloatingToc();
 
 // ===== 状态 =====
 let currentConfig = {
@@ -150,6 +152,7 @@ async function doRender(markdown: string) {
   });
 
   buildLineCache();
+  updateFloatingToc(previewEl);
   document.documentElement.scrollTop = scrollTop;
 }
 
