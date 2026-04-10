@@ -179,6 +179,8 @@
     "highlight.js": "^11.10.0",
     "katex": "^0.16.0",
     "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0",
+    "markdown-it-emoji": "^3.0.0",
     "markdown-it-footnote": "^4.0.0",
     "markdown-it-task-lists": "^2.1.0",
     "mermaid": "^11.4.0"

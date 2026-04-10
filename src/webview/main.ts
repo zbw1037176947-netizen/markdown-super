@@ -6,15 +6,19 @@ import MarkdownIt from "markdown-it";
 import hljs from "highlight.js";
 import taskLists from "markdown-it-task-lists";
 import footnote from "markdown-it-footnote";
+import anchor from "markdown-it-anchor";
+import { full as emoji } from "markdown-it-emoji";
 import { renderMermaidBlocks } from "./renderers/mermaid";
 import { renderKatexBlocks, katexPlugin } from "./renderers/katex";
 import { renderPlantUmlBlocks } from "./renderers/plantuml";
 import { renderMarkmapBlocks } from "./renderers/markmap";
 import { injectSourceLines } from "./plugins/source-line";
 import { frontmatterPlugin } from "./plugins/frontmatter";
+import { gfmAlertPlugin } from "./plugins/gfm-alert";
 import { enhanceCodeBlocks } from "./renderers/code-block";
 import { initPreviewSearch } from "./features/search";
 import { initFloatingToc, updateFloatingToc } from "./features/floating-toc";
+import { initImageZoom } from "./features/image-zoom";
 import "./styles/preview.css";
 
 const vscode = acquireVsCodeApi();
@@ -54,8 +58,11 @@ const md = new MarkdownIt({
 
 md.use(taskLists, { enabled: true });
 md.use(footnote);
+md.use(emoji);
+md.use(anchor, { permalink: false, slugify: (s: string) => encodeURIComponent(s.trim().toLowerCase().replace(/\s+/g, "-")) });
 md.use(katexPlugin);
 md.use(frontmatterPlugin);
+md.use(gfmAlertPlugin);
 injectSourceLines(md);
 
 // ===== DOM =====
@@ -65,6 +72,7 @@ const loadingEl = document.getElementById("loading")!;
 // ===== 初始化预览内搜索 & 浮动 TOC =====
 initPreviewSearch(previewEl);
 initFloatingToc();
+initImageZoom(previewEl);
 
 // ===== 状态 =====
 let currentConfig = {
@@ -134,9 +142,16 @@ async function doRender(markdown: string) {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       const href = a.getAttribute("href");
-      if (href) {
-        vscode.postMessage({ type: "openLink", href });
+      if (!href) return;
+      // 文档内锚点链接 → 预览内跳转
+      if (href.startsWith("#")) {
+        const target = previewEl.querySelector(`[id="${CSS.escape(href.slice(1))}"]`);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
       }
+      vscode.postMessage({ type: "openLink", href });
     });
   });
 

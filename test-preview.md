@@ -10,6 +10,8 @@ version: 0.1.0
 
 > 本文档覆盖 M1~M4 的所有功能，请逐一验证。
 
+**快速跳转**: [GFM Alert](#17-gfm-alert) | [锚点链接](#18-锚点链接测试) | [Emoji](#19-emoji-表情) | [图片放大](#10-图片显示测试)
+
 ---
 
 ## 1. Front Matter 卡片
@@ -428,4 +430,52 @@ Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et d
 
 ---
 
-**🎉 测试完成！如果以上所有功能都正常，说明 Markdown Super v0.1.0 已就绪。**
+## 17. GFM Alert
+
+> [!NOTE]
+> 这是一个 Note 提示块，用于补充说明信息。
+
+> [!TIP]
+> 这是一个 Tip 提示块，提供有用的建议。比如：使用 `Ctrl+Shift+V` 打开预览。
+
+> [!IMPORTANT]
+> 这是一个 Important 提示块，标记重要信息。
+
+> [!WARNING]
+> 这是一个 Warning 提示块，提醒潜在风险。
+> 
+> 支持多段内容和**格式化**。
+
+> [!CAUTION]
+> 这是一个 Caution 提示块，标记危险操作。请勿在生产环境执行 `rm -rf /`。
+
+---
+
+## 18. 锚点链接测试
+
+点击下面的链接应该跳转到文档对应位置：
+
+- [跳到第 1 节 Front Matter](#1-front-matter-卡片)
+- [跳到第 5 节代码块](#5-代码块增强)
+- [跳到第 7 节 Mermaid](#7-mermaid-图表)
+- [跳到第 17 节 GFM Alert](#17-gfm-alert)
+
+---
+
+## 19. Emoji 表情
+
+:smile: :rocket: :thumbsup: :heart: :star: :fire: :tada: :warning: :bug: :memo:
+
+写代码就像 :coffee: + :keyboard: = :sparkles:
+
+---
+
+## 20. 图片点击放大测试
+
+点击下面的图片，应该弹出全屏大图查看，点击遮罩或按 Esc 关闭：
+
+![VS Code Logo](https://code.visualstudio.com/assets/images/code-stable.png)
+
+---
+
+**🎉 测试完成！如果以上 20 项功能都正常，说明 Markdown Super v0.1.0 已就绪。**

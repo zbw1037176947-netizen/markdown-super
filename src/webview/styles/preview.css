@@ -764,6 +764,93 @@ body.theme-light .preview-search-btn:hover {
   outline: 2px solid #ffc800;
 }
 
+/* ===== GFM Alert ===== */
+.gfm-alert {
+  margin: 1em 0;
+  padding: 0;
+  border-radius: 6px;
+  border-left: 4px solid;
+  overflow: hidden;
+}
+
+.gfm-alert-title {
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.gfm-alert-body {
+  padding: 4px 12px 12px;
+}
+
+.gfm-alert-body > :first-child { margin-top: 0; }
+.gfm-alert-body > :last-child { margin-bottom: 0; }
+
+.alert-note       { border-color: #539bf5; background: rgba(83, 155, 245, 0.1); }
+.alert-note .gfm-alert-title { color: #539bf5; }
+
+.alert-tip        { border-color: #3fb950; background: rgba(63, 185, 80, 0.1); }
+.alert-tip .gfm-alert-title { color: #3fb950; }
+
+.alert-important  { border-color: #a371f7; background: rgba(163, 113, 247, 0.1); }
+.alert-important .gfm-alert-title { color: #a371f7; }
+
+.alert-warning    { border-color: #d29922; background: rgba(210, 153, 34, 0.1); }
+.alert-warning .gfm-alert-title { color: #d29922; }
+
+.alert-caution    { border-color: #f85149; background: rgba(248, 81, 73, 0.1); }
+.alert-caution .gfm-alert-title { color: #f85149; }
+
+/* 浅色模式 alert */
+body.theme-light .alert-note       { border-color: #0969da; background: #ddf4ff; }
+body.theme-light .alert-note .gfm-alert-title { color: #0969da; }
+
+body.theme-light .alert-tip        { border-color: #1a7f37; background: #dafbe1; }
+body.theme-light .alert-tip .gfm-alert-title { color: #1a7f37; }
+
+body.theme-light .alert-important  { border-color: #8250df; background: #fbefff; }
+body.theme-light .alert-important .gfm-alert-title { color: #8250df; }
+
+body.theme-light .alert-warning    { border-color: #9a6700; background: #fff8c5; }
+body.theme-light .alert-warning .gfm-alert-title { color: #9a6700; }
+
+body.theme-light .alert-caution    { border-color: #cf222e; background: #ffebe9; }
+body.theme-light .alert-caution .gfm-alert-title { color: #cf222e; }
+
+/* ===== 图片点击放大 (Lightbox) ===== */
+#preview img {
+  cursor: zoom-in;
+}
+
+.image-zoom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: zoom-out;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.image-zoom-overlay.active {
+  opacity: 1;
+}
+
+.image-zoom-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  cursor: zoom-out;
+}
+
 /* ===== 浮动 TOC 导航栏 ===== */
 .floating-toc {
   position: fixed;
