@@ -59,7 +59,10 @@ const md = new MarkdownIt({
 md.use(taskLists, { enabled: true });
 md.use(footnote);
 md.use(emoji);
-md.use(anchor, { permalink: false, slugify: (s: string) => encodeURIComponent(s.trim().toLowerCase().replace(/\s+/g, "-")) });
+md.use(anchor, {
+  permalink: false,
+  slugify: (s: string) => s.trim().toLowerCase().replace(/\s+/g, "-").replace(/[<>]/g, ""),
+});
 md.use(katexPlugin);
 md.use(frontmatterPlugin);
 md.use(gfmAlertPlugin);
@@ -145,11 +148,18 @@ async function doRender(markdown: string) {
       if (!href) return;
       // 文档内锚点链接 → 预览内跳转
       if (href.startsWith("#")) {
-        const target = previewEl.querySelector(`[id="${CSS.escape(href.slice(1))}"]`);
+        const anchor = decodeURIComponent(href.slice(1));
+        // 先精确匹配 id，再尝试模糊匹配
+        const target =
+          document.getElementById(anchor) ||
+          document.getElementById(CSS.escape(anchor)) ||
+          previewEl.querySelector(`[id="${CSS.escape(anchor)}"]`);
         if (target) {
           target.scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
+        // 锚点找不到也不要跳外部
+        return;
       }
       vscode.postMessage({ type: "openLink", href });
     });
