@@ -61,7 +61,13 @@ md.use(footnote);
 md.use(emoji);
 md.use(anchor, {
   permalink: false,
-  slugify: (s: string) => s.trim().toLowerCase().replace(/\s+/g, "-").replace(/[<>]/g, ""),
+  // GitHub 风格 slugify：小写 + 空格转连字符 + 去掉标点（保留中文和连字符）
+  slugify: (s: string) =>
+    s.trim().toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w\u4e00-\u9fff\u3400-\u4dbf-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, ""),
 });
 md.use(katexPlugin);
 md.use(frontmatterPlugin);
