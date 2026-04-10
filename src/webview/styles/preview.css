@@ -782,21 +782,25 @@ body.theme-light .preview-search-btn:hover {
 .floating-toc-toggle {
   width: 32px;
   height: 32px;
-  border: 1px solid var(--vscode-editorWidget-border, #444);
+  border: 1px solid transparent;
   border-radius: 6px;
-  background: var(--vscode-editorWidget-background, #252526);
+  background: transparent;
   color: var(--vscode-editor-foreground, #ccc);
   cursor: pointer;
   font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: background 0.15s;
+  opacity: 0.15;
+  transition: opacity 0.25s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
+.floating-toc:hover .floating-toc-toggle,
 .floating-toc-toggle:hover {
-  background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.1));
+  opacity: 1;
+  background: var(--vscode-editorWidget-background, #252526);
+  border-color: var(--vscode-editorWidget-border, #444);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .floating-toc-panel {
@@ -873,14 +877,14 @@ body.theme-light .preview-search-btn:hover {
 
 /* ===== 浅色模式下的浮动 TOC ===== */
 body.theme-light .floating-toc-toggle {
-  background: #fff;
-  border-color: #d0d7de;
   color: #1a1a1a;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
+body.theme-light .floating-toc:hover .floating-toc-toggle,
 body.theme-light .floating-toc-toggle:hover {
-  background: #f6f8fa;
+  background: #fff;
+  border-color: #d0d7de;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 body.theme-light .floating-toc-panel {
