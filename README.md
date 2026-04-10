@@ -4,6 +4,8 @@
 
 One extension to replace them all — no more juggling 3-4 Markdown plugins.
 
+English | [中文](./README.zh-CN.md)
+
 ![Preview](https://img.shields.io/badge/Preview-Live%20Sync-blue)
 ![Theme](https://img.shields.io/badge/Theme-Light%20%2F%20Auto-green)
 ![Diagrams](https://img.shields.io/badge/Diagrams-Mermaid%20%7C%20PlantUML%20%7C%20Markmap-orange)
