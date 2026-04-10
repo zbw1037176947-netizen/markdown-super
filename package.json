@@ -5,10 +5,38 @@
   "version": "0.1.0",
   "publisher": "adsgo",
   "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0288D1",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adsgo/markdown-super"
+  },
+  "bugs": {
+    "url": "https://github.com/adsgo/markdown-super/issues"
+  },
+  "homepage": "https://github.com/adsgo/markdown-super#readme",
+  "keywords": [
+    "markdown",
+    "preview",
+    "mermaid",
+    "katex",
+    "plantuml",
+    "markmap",
+    "latex",
+    "math",
+    "diagram",
+    "toc",
+    "outline"
+  ],
   "engines": {
     "vscode": "^1.90.0"
   },
   "categories": [
+    "Programming Languages",
+    "Visualization",
     "Other"
   ],
   "activationEvents": [
