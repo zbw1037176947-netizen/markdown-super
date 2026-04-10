@@ -3,7 +3,7 @@
   "displayName": "Markdown Super",
   "description": "All-in-one Markdown preview & editing experience for VS Code — Mermaid, LaTeX, PlantUML, Markmap, and more.",
   "version": "0.1.0",
-  "publisher": "adsgo",
+  "publisher": "zanbowen",
   "license": "MIT",
   "icon": "media/icon.png",
   "galleryBanner": {
@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/adsgo/markdown-super"
+    "url": "https://github.com/zbw1037176947-netizen/markdown-super"
   },
   "bugs": {
-    "url": "https://github.com/adsgo/markdown-super/issues"
+    "url": "https://github.com/zbw1037176947-netizen/markdown-super/issues"
   },
-  "homepage": "https://github.com/adsgo/markdown-super#readme",
+  "homepage": "https://github.com/zbw1037176947-netizen/markdown-super#readme",
   "keywords": [
     "markdown",
     "preview",
