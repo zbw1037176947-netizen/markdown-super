@@ -1,0 +1,199 @@
+/* ===== Markdown Super Preview Styles ===== */
+
+/* --- 基础排版 --- */
+#preview {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+#preview h1,
+#preview h2,
+#preview h3,
+#preview h4,
+#preview h5,
+#preview h6 {
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+#preview h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--vscode-editorWidget-border, #444);
+}
+
+#preview h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--vscode-editorWidget-border, #444);
+}
+
+#preview h3 { font-size: 1.25em; }
+#preview h4 { font-size: 1em; }
+
+#preview p {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+#preview a {
+  color: var(--vscode-textLink-foreground, #3794ff);
+  text-decoration: none;
+}
+#preview a:hover {
+  text-decoration: underline;
+}
+
+/* --- 代码块 --- */
+#preview pre {
+  background: var(--vscode-textCodeBlock-background, #1e1e1e);
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+#preview code {
+  font-family: var(--vscode-editor-fontFamily, "Fira Code", "Consolas", monospace);
+  font-size: 0.9em;
+}
+
+#preview :not(pre) > code {
+  background: var(--vscode-textCodeBlock-background, #1e1e1e);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* --- 表格 --- */
+#preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+#preview th,
+#preview td {
+  border: 1px solid var(--vscode-editorWidget-border, #444);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+#preview th {
+  background: var(--vscode-editor-selectionBackground, #264f78);
+  font-weight: 600;
+}
+
+#preview tr:nth-child(even) {
+  background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.04));
+}
+
+/* --- 引用 --- */
+#preview blockquote {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 4px solid var(--vscode-textLink-foreground, #3794ff);
+  background: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+  color: var(--vscode-textBlockQuote-foreground, inherit);
+}
+
+#preview blockquote > :first-child { margin-top: 0; }
+#preview blockquote > :last-child { margin-bottom: 0; }
+
+/* --- 列表 --- */
+#preview ul,
+#preview ol {
+  padding-left: 2em;
+  margin: 0.5em 0;
+}
+
+#preview li + li {
+  margin-top: 0.25em;
+}
+
+/* --- 任务列表 --- */
+#preview .task-list-item {
+  list-style: none;
+  margin-left: -1.5em;
+}
+
+#preview .task-list-item input[type="checkbox"] {
+  margin-right: 0.5em;
+  vertical-align: middle;
+}
+
+/* --- 分割线 --- */
+#preview hr {
+  border: none;
+  border-top: 1px solid var(--vscode-editorWidget-border, #444);
+  margin: 2em 0;
+}
+
+/* --- 图片 --- */
+#preview img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* --- Mermaid --- */
+.mermaid-rendered {
+  text-align: center;
+  margin: 1em 0;
+  overflow-x: auto;
+}
+
+.mermaid-rendered svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.mermaid-error {
+  color: var(--vscode-errorForeground, #f44747);
+  background: var(--vscode-inputValidation-errorBackground, rgba(244, 71, 71, 0.1));
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  margin: 0.5em 0;
+}
+
+/* --- KaTeX --- */
+.katex-block {
+  text-align: center;
+  margin: 1em 0;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.katex-error {
+  color: var(--vscode-errorForeground, #f44747);
+}
+
+/* --- 脚注 --- */
+#preview .footnotes {
+  border-top: 1px solid var(--vscode-editorWidget-border, #444);
+  margin-top: 2em;
+  padding-top: 1em;
+  font-size: 0.85em;
+}
+
+/* --- 高亮主题（跟随 VS Code） --- */
+.hljs {
+  background: transparent !important;
+}
+
+/* --- 滚动条 --- */
+#preview::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+#preview::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-background);
+  border-radius: 4px;
+}
+
+#preview::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground);
+}
