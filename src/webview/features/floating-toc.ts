@@ -1,46 +1,27 @@
 /**
  * 预览面板内浮动 TOC 导航栏
  *
- * - 固定在预览右侧，可折叠/展开
- * - 从渲染后的 DOM 中提取标题
- * - 点击跳转到对应位置
- * - 滚动时自动高亮当前所在的标题
+ * 默认展开，整体半透明，鼠标移入时变清晰
  */
 
 let tocContainer: HTMLElement | null = null;
 let tocList: HTMLElement | null = null;
-let tocToggle: HTMLElement | null = null;
-let isCollapsed = false;
-let tocItems: { el: HTMLElement; heading: HTMLElement; level: number }[] = [];
+let tocItems: { el: HTMLElement; heading: HTMLElement }[] = [];
 
 export function initFloatingToc() {
-  // 创建 TOC 容器
   tocContainer = document.createElement("div");
   tocContainer.className = "floating-toc";
   tocContainer.innerHTML = `
-    <button class="floating-toc-toggle" title="Toggle outline">☰</button>
-    <div class="floating-toc-panel">
-      <div class="floating-toc-header">Outline</div>
-      <div class="floating-toc-list"></div>
-    </div>
+    <div class="floating-toc-header">Outline</div>
+    <div class="floating-toc-list"></div>
   `;
   document.body.appendChild(tocContainer);
 
-  tocToggle = tocContainer.querySelector(".floating-toc-toggle")!;
   tocList = tocContainer.querySelector(".floating-toc-list")!;
 
-  tocToggle.addEventListener("click", () => {
-    isCollapsed = !isCollapsed;
-    tocContainer!.classList.toggle("collapsed", isCollapsed);
-  });
-
-  // 滚动时高亮当前标题
   window.addEventListener("scroll", onScroll, { passive: true });
 }
 
-/**
- * 渲染完成后调用，重新提取标题并生成 TOC
- */
 export function updateFloatingToc(previewEl: HTMLElement) {
   if (!tocList) return;
 
@@ -66,10 +47,9 @@ export function updateFloatingToc(previewEl: HTMLElement) {
     });
 
     tocList!.appendChild(item);
-    tocItems.push({ el: item, heading: heading as HTMLElement, level });
+    tocItems.push({ el: item, heading: heading as HTMLElement });
   });
 
-  // 初始高亮
   onScroll();
 }
 
@@ -77,7 +57,7 @@ function onScroll() {
   if (tocItems.length === 0) return;
 
   const scrollTop = window.scrollY;
-  const offset = 80; // 偏移量，让高亮稍微提前切换
+  const offset = 80;
 
   let activeIndex = 0;
   for (let i = tocItems.length - 1; i >= 0; i--) {
@@ -91,13 +71,11 @@ function onScroll() {
     item.el.classList.toggle("active", i === activeIndex);
   });
 
-  // 确保激活项可见（TOC 列表本身可能需要滚动）
   const activeItem = tocItems[activeIndex];
   if (activeItem && tocList) {
     const itemTop = activeItem.el.offsetTop;
     const listHeight = tocList.clientHeight;
     const listScroll = tocList.scrollTop;
-
     if (itemTop < listScroll || itemTop > listScroll + listHeight - 30) {
       tocList.scrollTop = itemTop - listHeight / 2;
     }

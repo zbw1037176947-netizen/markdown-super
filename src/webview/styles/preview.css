@@ -770,58 +770,29 @@ body.theme-light .preview-search-btn:hover {
   top: 12px;
   right: 12px;
   z-index: 900;
+  width: 200px;
+  max-height: 60vh;
+  border: 1px solid var(--vscode-editorWidget-border, #444);
+  border-radius: 6px;
+  background: var(--vscode-editorWidget-background, #252526);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  opacity: 0.15;
+  transition: opacity 0.3s;
+}
+
+.floating-toc:hover {
+  opacity: 1;
 }
 
 .floating-toc.empty {
   display: none;
 }
 
-.floating-toc-toggle {
-  width: 32px;
-  height: 32px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--vscode-editor-foreground, #ccc);
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.15;
-  transition: opacity 0.25s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
-}
-
-.floating-toc:hover .floating-toc-toggle,
-.floating-toc-toggle:hover {
-  opacity: 1;
-  background: var(--vscode-editorWidget-background, #252526);
-  border-color: var(--vscode-editorWidget-border, #444);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.floating-toc-panel {
-  margin-top: 6px;
-  width: 240px;
-  max-height: 60vh;
-  border: 1px solid var(--vscode-editorWidget-border, #444);
-  border-radius: 6px;
-  background: var(--vscode-editorWidget-background, #252526);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.floating-toc.collapsed .floating-toc-panel {
-  display: none;
-}
-
 .floating-toc-header {
-  padding: 8px 12px;
+  padding: 6px 12px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -876,21 +847,10 @@ body.theme-light .preview-search-btn:hover {
 }
 
 /* ===== 浅色模式下的浮动 TOC ===== */
-body.theme-light .floating-toc-toggle {
-  color: #1a1a1a;
-}
-
-body.theme-light .floating-toc:hover .floating-toc-toggle,
-body.theme-light .floating-toc-toggle:hover {
+body.theme-light .floating-toc {
   background: #fff;
   border-color: #d0d7de;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-body.theme-light .floating-toc-panel {
-  background: #fff;
-  border-color: #d0d7de;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 body.theme-light .floating-toc-header {
