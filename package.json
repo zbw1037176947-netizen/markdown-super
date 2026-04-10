@@ -26,6 +26,12 @@
         "title": "Open Preview to the Side",
         "category": "Markdown Super",
         "icon": "$(open-preview)"
+      },
+      {
+        "command": "markdownSuper.toggleTheme",
+        "title": "Toggle Preview Theme (Auto / Light)",
+        "category": "Markdown Super",
+        "icon": "$(color-mode)"
       }
     ],
     "keybindings": [
@@ -41,6 +47,11 @@
         {
           "command": "markdownSuper.openPreviewToSide",
           "when": "editorLangId == markdown",
+          "group": "navigation"
+        },
+        {
+          "command": "markdownSuper.toggleTheme",
+          "when": "markdownSuperPreviewActive",
           "group": "navigation"
         }
       ]
@@ -58,20 +69,15 @@
           "default": true,
           "description": "Enable KaTeX math formula rendering"
         },
-        "markdownSuper.theme": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "light",
-            "dark"
-          ],
-          "default": "auto",
-          "description": "Preview theme (auto follows VS Code theme)"
-        },
         "markdownSuper.fontSize": {
           "type": "number",
           "default": 16,
           "description": "Preview font size in pixels"
+        },
+        "markdownSuper.codeBlock.lineNumbers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show line numbers in code blocks"
         }
       }
     }

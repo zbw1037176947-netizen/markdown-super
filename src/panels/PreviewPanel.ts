@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 
+type PreviewTheme = "auto" | "light";
+
 export class PreviewPanel {
   public static currentPanel: PreviewPanel | undefined;
   private static readonly viewType = "markdownSuper.preview";
@@ -7,6 +9,8 @@ export class PreviewPanel {
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
   private _currentDocUri: string | undefined;
+  private _lastMessage: unknown = null;
+  private _theme: PreviewTheme = "light";
   private _disposables: vscode.Disposable[] = [];
 
   /**
@@ -17,14 +21,12 @@ export class PreviewPanel {
     document: vscode.TextDocument,
     column: vscode.ViewColumn
   ) {
-    // 如果面板已存在，直接显示并更新内容
     if (PreviewPanel.currentPanel) {
       PreviewPanel.currentPanel._panel.reveal(column);
       PreviewPanel.currentPanel._update(document);
       return;
     }
 
-    // 创建新面板
     const panel = vscode.window.createWebviewPanel(
       PreviewPanel.viewType,
       "Markdown Super Preview",
@@ -51,6 +53,32 @@ export class PreviewPanel {
     }
   }
 
+  /**
+   * 编辑器光标移动时，通知 webview 滚动到对应行
+   */
+  public static scrollToLine(line: number) {
+    if (PreviewPanel.currentPanel) {
+      PreviewPanel.currentPanel._panel.webview.postMessage({
+        type: "scrollToLine",
+        line,
+      });
+    }
+  }
+
+  /**
+   * 切换预览主题
+   */
+  public static toggleTheme() {
+    if (PreviewPanel.currentPanel) {
+      const p = PreviewPanel.currentPanel;
+      p._theme = p._theme === "auto" ? "light" : "auto";
+      p._panel.webview.postMessage({
+        type: "setTheme",
+        theme: p._theme,
+      });
+    }
+  }
+
   private constructor(
     panel: vscode.WebviewPanel,
     extensionUri: vscode.Uri,
@@ -59,16 +87,14 @@ export class PreviewPanel {
     this._panel = panel;
     this._extensionUri = extensionUri;
 
-    // 设置 HTML
     this._panel.webview.html = this._getHtml(this._panel.webview);
-
-    // 发送初始内容
     this._update(document);
 
-    // 监听面板关闭
+    // 设置 context key，用于控制主题切换按钮显示
+    vscode.commands.executeCommand("setContext", "markdownSuperPreviewActive", true);
+
     this._panel.onDidDispose(() => this._dispose(), null, this._disposables);
 
-    // 监听 webview 消息
     this._panel.webview.onDidReceiveMessage(
       (message) => this._handleMessage(message),
       null,
@@ -76,55 +102,72 @@ export class PreviewPanel {
     );
   }
 
-  /**
-   * 更新预览内容（发送 markdown 原文到 webview，由 webview 端渲染）
-   */
   private _update(document: vscode.TextDocument) {
     this._currentDocUri = document.uri.toString();
     this._panel.title = `Preview: ${this._getFileName(document.uri)}`;
 
-    // 读取用户配置
     const config = vscode.workspace.getConfiguration("markdownSuper");
 
-    this._panel.webview.postMessage({
+    const msg = {
       type: "update",
       content: document.getText(),
       config: {
         mermaidEnabled: config.get<boolean>("mermaid.enabled", true),
         katexEnabled: config.get<boolean>("katex.enabled", true),
-        theme: config.get<string>("theme", "auto"),
+        theme: this._theme,
         fontSize: config.get<number>("fontSize", 16),
+        lineNumbers: config.get<boolean>("codeBlock.lineNumbers", false),
       },
-    });
+    };
+    this._lastMessage = msg;
+    this._panel.webview.postMessage(msg);
   }
 
-  /**
-   * 处理 webview 发来的消息
-   */
   private _handleMessage(message: { type: string; [key: string]: unknown }) {
     switch (message.type) {
       case "ready":
-        // Webview 加载完成，发送当前文档内容
-        const editor = vscode.window.activeTextEditor;
-        if (editor && editor.document.languageId === "markdown") {
-          this._update(editor.document);
+        if (this._lastMessage) {
+          this._panel.webview.postMessage(this._lastMessage);
         }
         break;
       case "openLink":
-        // 打开外部链接
         if (typeof message.href === "string") {
           vscode.env.openExternal(vscode.Uri.parse(message.href));
+        }
+        break;
+      case "revealLine":
+        // 预览点击 → 编辑器跳转到对应行
+        if (typeof message.line === "number") {
+          this._revealLineInEditor(message.line as number);
         }
         break;
     }
   }
 
   /**
-   * 生成 webview HTML
+   * 跳转编辑器到指定行
    */
+  private _revealLineInEditor(line: number) {
+    // 找到当前文档对应的编辑器
+    for (const editor of vscode.window.visibleTextEditors) {
+      if (editor.document.uri.toString() === this._currentDocUri) {
+        const pos = new vscode.Position(line, 0);
+        editor.selection = new vscode.Selection(pos, pos);
+        editor.revealRange(
+          new vscode.Range(pos, pos),
+          vscode.TextEditorRevealType.InCenter
+        );
+        break;
+      }
+    }
+  }
+
   private _getHtml(webview: vscode.Webview): string {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "dist", "webview.js")
+    );
+    const cssUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "dist", "webview.css")
     );
     const nonce = getNonce();
 
@@ -140,27 +183,7 @@ export class PreviewPanel {
                    font-src ${webview.cspSource};
                    img-src ${webview.cspSource} https: data:;">
     <title>Markdown Super Preview</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 16px 24px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--vscode-editor-foreground);
-            background: var(--vscode-editor-background);
-        }
-        #preview {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        #loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 200px;
-            color: var(--vscode-descriptionForeground);
-        }
-    </style>
+    <link rel="stylesheet" href="${cssUri}">
 </head>
 <body>
     <div id="loading">Loading preview...</div>
@@ -177,6 +200,7 @@ export class PreviewPanel {
 
   private _dispose() {
     PreviewPanel.currentPanel = undefined;
+    vscode.commands.executeCommand("setContext", "markdownSuperPreviewActive", false);
     this._panel.dispose();
     for (const d of this._disposables) {
       d.dispose();
