@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 
 type PreviewTheme = "auto" | "light";
 
@@ -9,13 +10,11 @@ export class PreviewPanel {
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
   private _currentDocUri: string | undefined;
+  private _currentDocDir: vscode.Uri | undefined;
   private _lastMessage: unknown = null;
   private _theme: PreviewTheme = "light";
   private _disposables: vscode.Disposable[] = [];
 
-  /**
-   * 创建或显示预览面板
-   */
   public static createOrShow(
     context: vscode.ExtensionContext,
     document: vscode.TextDocument,
@@ -23,8 +22,23 @@ export class PreviewPanel {
   ) {
     if (PreviewPanel.currentPanel) {
       PreviewPanel.currentPanel._panel.reveal(column);
+      PreviewPanel.currentPanel._updateResourceRoots(document);
       PreviewPanel.currentPanel._update(document);
       return;
+    }
+
+    // 收集所有需要访问的目录
+    const docDir = vscode.Uri.file(path.dirname(document.uri.fsPath));
+    const resourceRoots: vscode.Uri[] = [
+      vscode.Uri.joinPath(context.extensionUri, "dist"),
+      vscode.Uri.joinPath(context.extensionUri, "media"),
+      docDir,
+    ];
+
+    // 加入工作区根目录（如果存在）
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+    if (workspaceFolder) {
+      resourceRoots.push(workspaceFolder.uri);
     }
 
     const panel = vscode.window.createWebviewPanel(
@@ -34,28 +48,19 @@ export class PreviewPanel {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [
-          vscode.Uri.joinPath(context.extensionUri, "dist"),
-          vscode.Uri.joinPath(context.extensionUri, "media"),
-        ],
+        localResourceRoots: resourceRoots,
       }
     );
 
     PreviewPanel.currentPanel = new PreviewPanel(panel, context.extensionUri, document);
   }
 
-  /**
-   * 如果预览面板可见，更新内容
-   */
   public static updateIfVisible(document: vscode.TextDocument) {
     if (PreviewPanel.currentPanel) {
       PreviewPanel.currentPanel._update(document);
     }
   }
 
-  /**
-   * 编辑器光标移动时，通知 webview 滚动到对应行
-   */
   public static scrollToLine(line: number) {
     if (PreviewPanel.currentPanel) {
       PreviewPanel.currentPanel._panel.webview.postMessage({
@@ -65,9 +70,6 @@ export class PreviewPanel {
     }
   }
 
-  /**
-   * 切换预览主题
-   */
   public static toggleTheme() {
     if (PreviewPanel.currentPanel) {
       const p = PreviewPanel.currentPanel;
@@ -86,11 +88,11 @@ export class PreviewPanel {
   ) {
     this._panel = panel;
     this._extensionUri = extensionUri;
+    this._currentDocDir = vscode.Uri.file(path.dirname(document.uri.fsPath));
 
     this._panel.webview.html = this._getHtml(this._panel.webview);
     this._update(document);
 
-    // 设置 context key，用于控制主题切换按钮显示
     vscode.commands.executeCommand("setContext", "markdownSuperPreviewActive", true);
 
     this._panel.onDidDispose(() => this._dispose(), null, this._disposables);
@@ -102,15 +104,27 @@ export class PreviewPanel {
     );
   }
 
+  /**
+   * 切换文档时更新 resource roots（webview 的 localResourceRoots 不可动态改，但 docDir 用于 URI 转换）
+   */
+  private _updateResourceRoots(document: vscode.TextDocument) {
+    this._currentDocDir = vscode.Uri.file(path.dirname(document.uri.fsPath));
+  }
+
   private _update(document: vscode.TextDocument) {
     this._currentDocUri = document.uri.toString();
+    this._currentDocDir = vscode.Uri.file(path.dirname(document.uri.fsPath));
     this._panel.title = `Preview: ${this._getFileName(document.uri)}`;
 
     const config = vscode.workspace.getConfiguration("markdownSuper");
 
+    // 把文档目录转换为 webview 可访问的 URI
+    const docDirUri = this._panel.webview.asWebviewUri(this._currentDocDir).toString();
+
     const msg = {
       type: "update",
       content: document.getText(),
+      baseUri: docDirUri,
       config: {
         mermaidEnabled: config.get<boolean>("mermaid.enabled", true),
         katexEnabled: config.get<boolean>("katex.enabled", true),
@@ -136,7 +150,6 @@ export class PreviewPanel {
         }
         break;
       case "revealLine":
-        // 预览点击 → 编辑器跳转到对应行
         if (typeof message.line === "number") {
           this._revealLineInEditor(message.line as number);
         }
@@ -144,11 +157,7 @@ export class PreviewPanel {
     }
   }
 
-  /**
-   * 跳转编辑器到指定行
-   */
   private _revealLineInEditor(line: number) {
-    // 找到当前文档对应的编辑器
     for (const editor of vscode.window.visibleTextEditors) {
       if (editor.document.uri.toString() === this._currentDocUri) {
         const pos = new vscode.Position(line, 0);

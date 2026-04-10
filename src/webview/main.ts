@@ -73,6 +73,9 @@ let currentConfig = {
   lineNumbers: false,
 };
 
+// 文档目录的 webview URI（用于解析相对路径图片）
+let baseUri = "";
+
 let isProgrammaticScroll = false;
 
 // ===== 防抖渲染 =====
@@ -95,6 +98,18 @@ async function doRender(markdown: string) {
 
   // 代码块增强
   enhanceCodeBlocks(previewEl, currentConfig.lineNumbers);
+
+  // 解析图片相对路径 → webview URI
+  if (baseUri) {
+    previewEl.querySelectorAll("img").forEach((img) => {
+      const src = img.getAttribute("src");
+      if (src && !src.startsWith("http") && !src.startsWith("data:") && !src.startsWith("vscode-")) {
+        // 相对路径：拼接 baseUri
+        const resolved = baseUri + "/" + src.replace(/^\.\//, "");
+        img.setAttribute("src", resolved);
+      }
+    });
+  }
 
   // 图表渲染（并行）
   const renderTasks: Promise<void>[] = [];
@@ -203,6 +218,7 @@ window.addEventListener("message", (event) => {
   switch (message.type) {
     case "update":
       currentConfig = { ...currentConfig, ...message.config };
+      if (message.baseUri) baseUri = message.baseUri as string;
       applyTheme(currentConfig.theme);
       scheduleRender(message.content);
       break;

@@ -1,96 +1,216 @@
 ---
-title: Markdown Super 功能测试
+title: Markdown Super 功能全面测试
 date: 2026-04-10
 author: AdsGo Team
-tags: [markdown, vscode, preview]
+tags: [markdown, vscode, preview, test]
+version: 0.1.0
 ---
 
-# Markdown Super 功能测试
+# Markdown Super 功能全面测试
 
-## 1. 基础排版
-
-这是一个**加粗**文本，这是*斜体*文本，这是`行内代码`。
-
-这是一个[链接](https://github.com)。
-
-> 这是一段引用文本
-> 支持多行引用
+> 本文档覆盖 M1~M4 的所有功能，请逐一验证。
 
 ---
 
-## 2. 代码块（复制按钮 + 语言标签）
+## 1. Front Matter 卡片
+
+上方的 YAML 头部应该渲染为一个**信息卡片**（表格样式），而不是原始的 `---` 文本。
+
+验证项：
+- [ ] 卡片显示 title、date、author、tags、version 五行
+- [ ] 浅色/暗色模式下样式正确
+
+---
+
+## 2. 基础排版
+
+**加粗文本**、*斜体文本*、***粗斜体***、~~删除线~~、`行内代码`
+
+这是一个 [普通链接](https://github.com)，这是一个 **[加粗链接](https://github.com)**。
+
+> 引用文本，支持 **Markdown 格式**
+>
+> > 嵌套引用也可以
+
+分割线下方 👇
+
+---
+
+有序列表：
+1. 第一项
+2. 第二项
+   1. 嵌套有序 a
+   2. 嵌套有序 b
+3. 第三项
+
+无序列表：
+- 苹果
+- 香蕉
+  - 小香蕉
+  - 大香蕉
+- 橙子
+
+---
+
+## 3. 任务列表
+
+- [x] M1 滚动同步
+- [x] M1 独立主题
+- [x] M1 代码块增强
+- [x] M2 图片粘贴/拖拽
+- [x] M2 PlantUML
+- [x] M2 Markmap
+- [x] M3 TOC 大纲
+- [x] M3 Front Matter
+- [x] M3 字数统计
+- [x] M4 快捷格式化
+- [x] M4 预览搜索
+- [ ] M5 Marketplace 上架
+
+---
+
+## 4. 表格
+
+| 功能 | 快捷键 | 状态 | 备注 |
+|------|--------|------|------|
+| 加粗 | `Ctrl+B` | ✅ | toggle 切换 |
+| 斜体 | `Ctrl+I` | ✅ | toggle 切换 |
+| 行内代码 | `Ctrl+Shift+C` | ✅ | toggle 切换 |
+| 插入链接 | `Ctrl+K` | ✅ | snippet 模式 |
+| 插入图片 | `Ctrl+Shift+K` | ✅ | snippet 模式 |
+| 删除线 | — | ✅ | 命令面板调用 |
+
+---
+
+## 5. 代码块增强
+
+### Python 示例
 
 ```python
-def fibonacci(n):
-    """计算斐波那契数列"""
-    if n <= 1:
-        return n
-    a, b = 0, 1
-    for _ in range(2, n + 1):
-        a, b = b, a + b
-    return b
+from dataclasses import dataclass
+from typing import List
 
-# 测试
-for i in range(10):
-    print(f"F({i}) = {fibonacci(i)}")
+@dataclass
+class TodoItem:
+    title: str
+    completed: bool = False
+    tags: List[str] = None
+
+    def toggle(self):
+        self.completed = not self.completed
+
+# 使用示例
+items = [
+    TodoItem("写 PRD", True, ["planning"]),
+    TodoItem("开发 M1", True, ["dev"]),
+    TodoItem("上架 Marketplace", False, ["release"]),
+]
+
+for item in items:
+    status = "✅" if item.completed else "⬜"
+    print(f"{status} {item.title}")
 ```
 
-```javascript
-const express = require('express');
-const app = express();
+### TypeScript 示例
 
-app.get('/api/hello', (req, res) => {
-  res.json({ message: 'Hello, World!' });
-});
+```typescript
+interface PreviewConfig {
+  mermaidEnabled: boolean;
+  katexEnabled: boolean;
+  theme: "auto" | "light";
+  fontSize: number;
+  lineNumbers: boolean;
+}
 
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
-});
+function scheduleRender(markdown: string): void {
+  if (renderTimer) clearTimeout(renderTimer);
+  renderTimer = setTimeout(() => doRender(markdown), 50);
+}
 ```
+
+### SQL 示例
 
 ```sql
-SELECT u.name, COUNT(o.id) AS order_count
-FROM users u
-LEFT JOIN orders o ON u.id = o.user_id
-WHERE u.created_at > '2025-01-01'
-GROUP BY u.name
-HAVING order_count > 5
-ORDER BY order_count DESC;
+WITH monthly_stats AS (
+  SELECT
+    DATE_TRUNC('month', created_at) AS month,
+    COUNT(*) AS total_orders,
+    SUM(amount) AS revenue,
+    AVG(amount) AS avg_order_value
+  FROM orders
+  WHERE status = 'completed'
+  GROUP BY 1
+)
+SELECT
+  month,
+  total_orders,
+  revenue,
+  avg_order_value,
+  LAG(revenue) OVER (ORDER BY month) AS prev_month_revenue,
+  ROUND((revenue - LAG(revenue) OVER (ORDER BY month)) / LAG(revenue) OVER (ORDER BY month) * 100, 1) AS growth_pct
+FROM monthly_stats
+ORDER BY month DESC;
 ```
 
-## 3. 表格
+### 无语言标识的代码块
 
-| 功能 | 状态 | 说明 |
-|------|------|------|
-| 滚动同步 | 已实现 | 双向同步 |
-| 主题切换 | 已实现 | Auto / Light |
-| 代码块增强 | 已实现 | 复制按钮 + 语言标签 |
-| KaTeX | 已实现 | 行内 + 块级 |
-| Mermaid | 已实现 | 延迟加载 |
+```
+这个代码块没有指定语言
+所以没有语法高亮
+但应该仍然有背景色和正确的字体
+```
 
-## 4. 任务列表
+### 行内代码
 
-- [x] 项目初始化
-- [x] 基础预览
-- [x] M1 功能开发
-- [ ] M2 图片粘贴
-- [ ] M3 大纲侧边栏
+使用 `npm install` 安装依赖，然后 `npm run build` 构建，用 `F5` 启动调试。
 
-## 5. KaTeX 数学公式
+---
 
-行内公式：$E = mc^2$，以及 $\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$
+## 6. KaTeX 数学公式
 
-块级公式：
+### 行内公式
 
-$$
-\frac{\partial f}{\partial x} = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}
-$$
+爱因斯坦质能方程 $E = mc^2$，欧拉公式 $e^{i\pi} + 1 = 0$，求和 $\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$。
+
+### 块级公式
+
+高斯积分：
 
 $$
-\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
 $$
 
-## 6. Mermaid 图表
+麦克斯韦方程组（微分形式）：
+
+$$
+\nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}, \quad
+\nabla \cdot \mathbf{B} = 0, \quad
+\nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t}, \quad
+\nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0 \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+$$
+
+矩阵：
+
+$$
+\begin{pmatrix}
+a_{11} & a_{12} & a_{13} \\
+a_{21} & a_{22} & a_{23} \\
+a_{31} & a_{32} & a_{33}
+\end{pmatrix}
+\begin{pmatrix}
+x_1 \\ x_2 \\ x_3
+\end{pmatrix}
+=
+\begin{pmatrix}
+b_1 \\ b_2 \\ b_3
+\end{pmatrix}
+$$
+
+---
+
+## 7. Mermaid 图表
+
+### 流程图
 
 ```mermaid
 graph TD
@@ -101,91 +221,211 @@ graph TD
     E --> F[发送 ready 消息]
     F --> G[接收 Markdown 原文]
     G --> H[markdown-it 渲染]
-    H --> I[后处理: Mermaid/KaTeX]
+    H --> I[后处理: Mermaid/KaTeX/PlantUML]
     I --> J[显示预览]
     C --> G
 ```
 
+### 时序图
+
 ```mermaid
 sequenceDiagram
+    participant U as 用户
     participant E as Extension (Node.js)
     participant W as Webview (Browser)
-    E->>W: postMessage({type: 'update', content})
-    W->>W: markdown-it render
-    W->>W: Mermaid / KaTeX
-    W-->>E: postMessage({type: 'revealLine', line})
+
+    U->>E: Ctrl+Shift+V 打开预览
+    E->>W: 创建 WebviewPanel
+    E->>W: postMessage({type: 'update', content, baseUri})
+    W->>W: markdown-it 渲染 + 后处理
+    W-->>U: 显示预览
+
+    U->>E: 滚动编辑器
+    E->>W: postMessage({type: 'scrollToLine', line})
+    W->>W: 二分查找 + 插值滚动
+
+    U->>W: 点击预览段落
+    W->>E: postMessage({type: 'revealLine', line})
     E->>E: editor.revealRange()
 ```
 
-## 7. 脚注
+### 甘特图
 
-这是一个带脚注的文本[^1]，以及另一个脚注[^2]。
+```mermaid
+gantt
+    title Markdown Super 开发计划
+    dateFormat YYYY-MM-DD
+    section M1
+        滚动同步       :done, m1a, 2026-04-10, 1d
+        独立主题       :done, m1b, 2026-04-10, 1d
+        代码块增强     :done, m1c, 2026-04-10, 1d
+    section M2
+        图片粘贴       :done, m2a, after m1c, 1d
+        PlantUML       :done, m2b, after m1c, 1d
+        Markmap        :done, m2c, after m1c, 1d
+    section M3
+        TOC 大纲       :done, m3a, after m2c, 1d
+        Front Matter   :done, m3b, after m2c, 1d
+        字数统计       :done, m3c, after m2c, 1d
+    section M4
+        快捷格式化     :done, m4a, after m3c, 1d
+        预览搜索       :done, m4b, after m3c, 1d
+    section M5
+        Marketplace    :active, m5, after m4b, 3d
+```
 
-[^1]: 这是第一个脚注的内容。
-[^2]: 这是第二个脚注，支持**Markdown格式**。
+---
 
-## 8. 嵌套列表
-
-1. 第一层
-   - 第二层 a
-   - 第二层 b
-     1. 第三层 1
-     2. 第三层 2
-2. 第一层继续
-   - 另一个第二层
-
-## 9. 长文本（滚动同步测试）
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-这里是文档的底部，如果你能看到这里，说明滚动同步工作正常！
-
-## 10. PlantUML 图表
+## 8. PlantUML 图表
 
 ```plantuml
 @startuml
 actor User
-User -> Browser : Open .md file
-Browser -> Extension : Activate
-Extension -> Webview : Create panel
-Webview -> Webview : Render markdown
-Webview --> User : Show preview
+participant "VS Code" as VSCode
+participant Extension
+participant "Webview\n(Browser)" as Webview
+
+User -> VSCode : 打开 .md 文件
+User -> VSCode : Ctrl+Shift+V
+VSCode -> Extension : 激活扩展
+Extension -> Webview : 创建 WebviewPanel
+Extension -> Webview : postMessage(content)
+Webview -> Webview : markdown-it 渲染
+Webview -> Webview : Mermaid / KaTeX 后处理
+Webview --> User : 显示预览
 @enduml
 ```
 
-## 11. Markmap 思维导图
+---
+
+## 9. Markmap 思维导图
 
 ```markmap
-# Markdown Super
-## 预览
-- 实时渲染
-- 滚动同步
-- 主题切换
-## 图表
-- Mermaid
-- PlantUML
-- Markmap
-## 编辑
-- 快捷格式化
-- 图片粘贴
-- 拖拽插入
-## 工具
-- TOC 大纲
-- 字数统计
-- 预览搜索
+# VS Code 插件架构
+## 扩展端 (Node.js)
+- extension.ts 入口
+- PreviewPanel 面板管理
+- 功能模块
+  - image-paste 图片粘贴
+  - formatting 快捷格式化
+  - outline TOC 大纲
+  - word-count 字数统计
+## Webview 端 (Browser)
+- main.ts 渲染管线
+- markdown-it 插件
+  - source-line 行号注入
+  - frontmatter 卡片
+- 渲染器
+  - code-block 代码增强
+  - mermaid 图表
+  - katex 公式
+  - plantuml 图表
+  - markmap 思维导图
+- 功能
+  - search 预览搜索
+## 构建
+- esbuild 双目标
+- TypeScript 双配置
 ```
+
+---
+
+## 10. 图片显示测试
+
+### 网络图片
+
+![VS Code Logo](https://code.visualstudio.com/assets/images/code-stable.png)
+
+### 本地图片（粘贴测试）
+
+在编辑器里截图后 Ctrl+V 粘贴，图片应该保存到 `./assets/` 目录并自动插入链接。
+
+---
+
+## 11. 脚注
+
+这是一个带脚注的文本[^1]，以及另一个脚注[^note]。
+
+[^1]: markdown-it 的脚注插件实现，支持自动编号。
+
+[^note]: 脚注支持**粗体**、`代码`等 Markdown 格式，以及多行内容。
+
+    第二段脚注内容。
+
+---
 
 ## 12. 快捷键测试
 
-试试选中文本后按：
-- **Ctrl+B**：加粗
-- **Ctrl+I**：斜体
-- **Ctrl+Shift+C**：行内代码
-- **Ctrl+K**：插入链接
-- **Ctrl+F**（在预览面板中）：搜索
+在编辑器中选中下面的文本，然后按快捷键测试：
+
+这段文本用来测试加粗 Ctrl+B
+这段文本用来测试斜体 Ctrl+I
+这段文本用来测试行内代码 Ctrl+Shift+C
+在这里按 Ctrl+K 插入链接
+在这里按 Ctrl+Shift+K 插入图片
+
+---
+
+## 13. 预览搜索测试
+
+在预览面板中按 **Ctrl+F**，搜索以下关键词验证高亮效果：
+
+- 搜索 "markdown" — 应该有多处匹配
+- 搜索 "KaTeX" — 应该有几处匹配
+- 搜索 "不存在的词" — 应该显示 "No results"
+- 按 Enter 和 Shift+Enter 在结果间跳转
+
+---
+
+## 14. 滚动同步测试
+
+下面是填充文本，用于测试长文档滚动同步。
+
+### 14.1 第一段
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+### 14.2 第二段
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+
+### 14.3 第三段
+
+At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+
+Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.
+
+---
+
+## 15. 主题切换测试
+
+点击预览面板右上角的 🎨 按钮切换主题：
+
+- **浅色模式**：白底（#fff）+ 深灰文字（#1a1a1a）+ GitHub 风格语法高亮
+- **跟随 VS Code**：跟随当前 VS Code 主题
+
+验证项：
+- [ ] 切换后代码块颜色正确
+- [ ] 切换后表格、引用块样式正确
+- [ ] 切换后 Mermaid 图表可读
+- [ ] 切换后搜索栏样式正确
+
+---
+
+## 16. 字数统计
+
+请查看 VS Code 右下角状态栏，应该显示类似：
+
+```
+📖 xxx 字 · 约 x 分钟
+```
+
+鼠标悬停应显示中文字数和英文词数的详细分类。
+
+---
+
+**🎉 测试完成！如果以上所有功能都正常，说明 Markdown Super v0.1.0 已就绪。**
