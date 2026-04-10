@@ -1,8 +1,8 @@
 {
   "name": "markdown-super",
   "displayName": "Markdown Super",
-  "description": "All-in-one Markdown preview & editing experience for VS Code — Mermaid, LaTeX, WYSIWYG, and more.",
-  "version": "0.0.1",
+  "description": "All-in-one Markdown preview & editing experience for VS Code — Mermaid, LaTeX, PlantUML, Markmap, and more.",
+  "version": "0.1.0",
   "publisher": "adsgo",
   "license": "MIT",
   "engines": {
@@ -11,7 +11,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -32,6 +34,36 @@
         "title": "Toggle Preview Theme (Auto / Light)",
         "category": "Markdown Super",
         "icon": "$(color-mode)"
+      },
+      {
+        "command": "markdownSuper.bold",
+        "title": "Toggle Bold",
+        "category": "Markdown Super"
+      },
+      {
+        "command": "markdownSuper.italic",
+        "title": "Toggle Italic",
+        "category": "Markdown Super"
+      },
+      {
+        "command": "markdownSuper.inlineCode",
+        "title": "Toggle Inline Code",
+        "category": "Markdown Super"
+      },
+      {
+        "command": "markdownSuper.strikethrough",
+        "title": "Toggle Strikethrough",
+        "category": "Markdown Super"
+      },
+      {
+        "command": "markdownSuper.link",
+        "title": "Insert Link",
+        "category": "Markdown Super"
+      },
+      {
+        "command": "markdownSuper.image",
+        "title": "Insert Image",
+        "category": "Markdown Super"
       }
     ],
     "keybindings": [
@@ -40,6 +72,36 @@
         "key": "ctrl+shift+v",
         "mac": "cmd+shift+v",
         "when": "editorLangId == markdown"
+      },
+      {
+        "command": "markdownSuper.bold",
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "when": "editorLangId == markdown && editorTextFocus"
+      },
+      {
+        "command": "markdownSuper.italic",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "editorLangId == markdown && editorTextFocus"
+      },
+      {
+        "command": "markdownSuper.inlineCode",
+        "key": "ctrl+shift+c",
+        "mac": "cmd+shift+c",
+        "when": "editorLangId == markdown && editorTextFocus"
+      },
+      {
+        "command": "markdownSuper.link",
+        "key": "ctrl+k",
+        "mac": "cmd+k",
+        "when": "editorLangId == markdown && editorTextFocus"
+      },
+      {
+        "command": "markdownSuper.image",
+        "key": "ctrl+shift+k",
+        "mac": "cmd+shift+k",
+        "when": "editorLangId == markdown && editorTextFocus"
       }
     ],
     "menus": {
@@ -53,6 +115,24 @@
           "command": "markdownSuper.toggleTheme",
           "when": "markdownSuperPreviewActive",
           "group": "navigation"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "markdownSuper",
+          "title": "Markdown Super",
+          "icon": "$(markdown)"
+        }
+      ]
+    },
+    "views": {
+      "markdownSuper": [
+        {
+          "id": "markdownSuperOutline",
+          "name": "Outline",
+          "when": "editorLangId == markdown"
         }
       ]
     },
@@ -78,6 +158,11 @@
           "type": "boolean",
           "default": false,
           "description": "Show line numbers in code blocks"
+        },
+        "markdownSuper.image.saveDir": {
+          "type": "string",
+          "default": "./assets",
+          "description": "Directory to save pasted/dropped images (relative to the markdown file)"
         }
       }
     }

@@ -1,3 +1,10 @@
+---
+title: Markdown Super 功能测试
+date: 2026-04-10
+author: AdsGo Team
+tags: [markdown, vscode, preview]
+---
+
 # Markdown Super 功能测试
 
 ## 1. 基础排版
@@ -138,3 +145,47 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
 这里是文档的底部，如果你能看到这里，说明滚动同步工作正常！
+
+## 10. PlantUML 图表
+
+```plantuml
+@startuml
+actor User
+User -> Browser : Open .md file
+Browser -> Extension : Activate
+Extension -> Webview : Create panel
+Webview -> Webview : Render markdown
+Webview --> User : Show preview
+@enduml
+```
+
+## 11. Markmap 思维导图
+
+```markmap
+# Markdown Super
+## 预览
+- 实时渲染
+- 滚动同步
+- 主题切换
+## 图表
+- Mermaid
+- PlantUML
+- Markmap
+## 编辑
+- 快捷格式化
+- 图片粘贴
+- 拖拽插入
+## 工具
+- TOC 大纲
+- 字数统计
+- 预览搜索
+```
+
+## 12. 快捷键测试
+
+试试选中文本后按：
+- **Ctrl+B**：加粗
+- **Ctrl+I**：斜体
+- **Ctrl+Shift+C**：行内代码
+- **Ctrl+K**：插入链接
+- **Ctrl+F**（在预览面板中）：搜索

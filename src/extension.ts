@@ -1,7 +1,37 @@
 import * as vscode from "vscode";
 import { PreviewPanel } from "./panels/PreviewPanel";
+import { registerImagePaste } from "./features/image-paste";
+import { registerFormatting } from "./features/formatting";
+import { MarkdownOutlineProvider } from "./features/outline";
+import { WordCountStatusBar } from "./features/word-count";
 
 export function activate(context: vscode.ExtensionContext) {
+  // 注册图片粘贴 & 拖拽
+  registerImagePaste(context);
+
+  // 注册快捷格式化
+  registerFormatting(context);
+
+  // 注册 TOC 大纲侧边栏
+  const outlineProvider = new MarkdownOutlineProvider();
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider("markdownSuperOutline", outlineProvider),
+    vscode.window.onDidChangeActiveTextEditor(() => outlineProvider.refresh()),
+    vscode.workspace.onDidChangeTextDocument(() => outlineProvider.refresh()),
+    vscode.commands.registerCommand("markdownSuper.outlineReveal", (line: number) => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor) {
+        const pos = new vscode.Position(line, 0);
+        editor.selection = new vscode.Selection(pos, pos);
+        editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
+      }
+      PreviewPanel.scrollToLine(line);
+    })
+  );
+
+  // 注册字数统计状态栏
+  const wordCount = new WordCountStatusBar();
+  context.subscriptions.push(wordCount);
   // 命令：在当前列打开预览
   context.subscriptions.push(
     vscode.commands.registerCommand("markdownSuper.openPreview", () => {
