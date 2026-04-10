@@ -42,7 +42,11 @@ body.theme-light #preview a {
 
 body.theme-light #preview pre,
 body.theme-light #preview :not(pre) > code {
-  background: #f6f8fa;
+  background: #f0f3f6;
+}
+
+body.theme-light #preview :not(pre) > code {
+  color: #d63384;
 }
 
 body.theme-light #preview blockquote {
