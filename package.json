@@ -118,21 +118,13 @@
         }
       ]
     },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "markdownSuper",
-          "title": "Markdown Super",
-          "icon": "media/icon-outline.svg"
-        }
-      ]
-    },
     "views": {
-      "markdownSuper": [
+      "explorer": [
         {
           "id": "markdownSuperOutline",
-          "name": "Outline",
-          "when": "editorLangId == markdown"
+          "name": "Markdown Outline",
+          "when": "editorLangId == markdown",
+          "icon": "media/icon-outline.svg"
         }
       ]
     },
