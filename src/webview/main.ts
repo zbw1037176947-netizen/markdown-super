@@ -95,6 +95,35 @@ window.addEventListener("scroll", () => {
   progressBar.style.width = `${progress}%`;
 }, { passive: true });
 
+// ===== 追踪最后交互的源码行号 =====
+let lastInteractedLine = 0;
+
+// 点击或右键时，找到最近的 data-line 元素记录行号
+document.addEventListener("mousedown", (e) => {
+  const target = e.target as HTMLElement;
+  const lineEl = target.closest("[data-line]");
+  if (lineEl) {
+    const line = parseInt(lineEl.getAttribute("data-line")!, 10);
+    if (!isNaN(line)) lastInteractedLine = line;
+  }
+});
+
+// 滚动时也更新（取视口中间的 data-line 元素）
+window.addEventListener("scroll", () => {
+  const viewportMid = window.scrollY + window.innerHeight / 2;
+  let closest = 0;
+  let closestDist = Infinity;
+  previewEl.querySelectorAll("[data-line]").forEach((el) => {
+    const htmlEl = el as HTMLElement;
+    const dist = Math.abs(htmlEl.offsetTop - viewportMid);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closest = parseInt(el.getAttribute("data-line")!, 10) || 0;
+    }
+  });
+  lastInteractedLine = closest;
+}, { passive: true });
+
 // ===== 状态 =====
 let currentConfig = {
   mermaidEnabled: true,
@@ -290,6 +319,10 @@ window.addEventListener("message", (event) => {
     case "setTheme":
       currentConfig.theme = message.theme;
       applyTheme(message.theme as string);
+      break;
+    case "requestClose":
+      // 扩展请求关闭预览，带上当前行号
+      vscode.postMessage({ type: "closePreview", line: lastInteractedLine });
       break;
   }
 });

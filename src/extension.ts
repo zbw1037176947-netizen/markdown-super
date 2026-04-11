@@ -41,11 +41,16 @@ export function activate(context: vscode.ExtensionContext) {
       const config = vscode.workspace.getConfiguration("markdownSuper");
       const mode = config.get<string>("previewMode", "side");
 
+      const cursorLine = editor.selection.active.line;
+
       if (mode === "inplace") {
         PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Active, "inplace");
       } else {
         PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Beside, "side");
       }
+
+      // 打开后滚动到编辑器当前光标位置
+      setTimeout(() => PreviewPanel.scrollToLine(cursorLine), 300);
     })
   );
 

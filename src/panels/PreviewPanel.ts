@@ -70,10 +70,12 @@ export class PreviewPanel {
 
   /**
    * 关闭预览并回到编辑器（用于右键菜单 "Edit in Source"）
+   * 通过 webview 消息获取当前行号，再跳转
    */
   public static closeAndEdit() {
     if (PreviewPanel.currentPanel) {
-      PreviewPanel.currentPanel._closeAndRestore();
+      // 请求 webview 发回带行号的 closePreview 消息
+      PreviewPanel.currentPanel._panel.webview.postMessage({ type: "requestClose" });
     }
   }
 
@@ -132,20 +134,26 @@ export class PreviewPanel {
   }
 
   /**
-   * 关闭预览，如果是 inplace 模式则恢复编辑器
+   * 关闭预览，如果是 inplace 模式则恢复编辑器并跳到指定行
    */
-  private _closeAndRestore() {
+  private _closeAndRestore(line?: number) {
     const sourceUri = this._sourceDocUri;
     const wasInplace = this._mode === "inplace";
 
-    this._panel.dispose(); // 触发 _dispose()
+    this._panel.dispose();
 
-    if (wasInplace && sourceUri) {
+    if (sourceUri) {
       const doc = vscode.workspace.textDocuments.find(
         (d) => d.uri.toString() === sourceUri
       );
       if (doc) {
-        vscode.window.showTextDocument(doc, vscode.ViewColumn.Active);
+        vscode.window.showTextDocument(doc, wasInplace ? vscode.ViewColumn.Active : undefined).then((editor) => {
+          if (line !== undefined && line >= 0) {
+            const pos = new vscode.Position(line, 0);
+            editor.selection = new vscode.Selection(pos, pos);
+            editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
+          }
+        });
       }
     }
   }
@@ -197,7 +205,7 @@ export class PreviewPanel {
         }
         break;
       case "closePreview":
-        this._closeAndRestore();
+        this._closeAndRestore(typeof message.line === "number" ? (message.line as number) : undefined);
         break;
     }
   }
