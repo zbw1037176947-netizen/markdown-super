@@ -3,6 +3,7 @@ import * as path from "path";
 
 const THEMES = ["github", "notion", "medium", "vue", "purple-night", "minimalist", "chinese-doc", "auto"] as const;
 type PreviewTheme = (typeof THEMES)[number];
+type PreviewMode = "side" | "inplace";
 
 export class PreviewPanel {
   public static currentPanel: PreviewPanel | undefined;
@@ -12,23 +13,30 @@ export class PreviewPanel {
   private readonly _extensionUri: vscode.Uri;
   private _currentDocUri: string | undefined;
   private _currentDocDir: vscode.Uri | undefined;
+  private _sourceDocUri: string | undefined; // 原地预览前的编辑器文档 URI
+  private _mode: PreviewMode = "side";
   private _lastMessage: unknown = null;
-  private _themeIndex: number = 0; // 默认 github
+  private _themeIndex: number = 0;
   private _disposables: vscode.Disposable[] = [];
 
   public static createOrShow(
     context: vscode.ExtensionContext,
     document: vscode.TextDocument,
-    column: vscode.ViewColumn
+    column: vscode.ViewColumn,
+    mode: PreviewMode = "side"
   ) {
     if (PreviewPanel.currentPanel) {
+      // 如果是 inplace 模式且预览已打开，toggle 关闭
+      if (mode === "inplace" && PreviewPanel.currentPanel._mode === "inplace") {
+        PreviewPanel.currentPanel._closeAndRestore();
+        return;
+      }
       PreviewPanel.currentPanel._panel.reveal(column);
       PreviewPanel.currentPanel._updateResourceRoots(document);
       PreviewPanel.currentPanel._update(document);
       return;
     }
 
-    // 收集所有需要访问的目录
     const docDir = vscode.Uri.file(path.dirname(document.uri.fsPath));
     const resourceRoots: vscode.Uri[] = [
       vscode.Uri.joinPath(context.extensionUri, "dist"),
@@ -36,7 +44,6 @@ export class PreviewPanel {
       docDir,
     ];
 
-    // 加入工作区根目录（如果存在）
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
     if (workspaceFolder) {
       resourceRoots.push(workspaceFolder.uri);
@@ -53,7 +60,21 @@ export class PreviewPanel {
       }
     );
 
-    PreviewPanel.currentPanel = new PreviewPanel(panel, context.extensionUri, document);
+    PreviewPanel.currentPanel = new PreviewPanel(
+      panel,
+      context.extensionUri,
+      document,
+      mode
+    );
+  }
+
+  /**
+   * 关闭预览并回到编辑器（用于右键菜单 "Edit in Source"）
+   */
+  public static closeAndEdit() {
+    if (PreviewPanel.currentPanel) {
+      PreviewPanel.currentPanel._closeAndRestore();
+    }
   }
 
   public static updateIfVisible(document: vscode.TextDocument) {
@@ -87,11 +108,14 @@ export class PreviewPanel {
   private constructor(
     panel: vscode.WebviewPanel,
     extensionUri: vscode.Uri,
-    document: vscode.TextDocument
+    document: vscode.TextDocument,
+    mode: PreviewMode
   ) {
     this._panel = panel;
     this._extensionUri = extensionUri;
     this._currentDocDir = vscode.Uri.file(path.dirname(document.uri.fsPath));
+    this._mode = mode;
+    this._sourceDocUri = document.uri.toString();
 
     this._panel.webview.html = this._getHtml(this._panel.webview);
     this._update(document);
@@ -108,8 +132,24 @@ export class PreviewPanel {
   }
 
   /**
-   * 切换文档时更新 resource roots（webview 的 localResourceRoots 不可动态改，但 docDir 用于 URI 转换）
+   * 关闭预览，如果是 inplace 模式则恢复编辑器
    */
+  private _closeAndRestore() {
+    const sourceUri = this._sourceDocUri;
+    const wasInplace = this._mode === "inplace";
+
+    this._panel.dispose(); // 触发 _dispose()
+
+    if (wasInplace && sourceUri) {
+      const doc = vscode.workspace.textDocuments.find(
+        (d) => d.uri.toString() === sourceUri
+      );
+      if (doc) {
+        vscode.window.showTextDocument(doc, vscode.ViewColumn.Active);
+      }
+    }
+  }
+
   private _updateResourceRoots(document: vscode.TextDocument) {
     this._currentDocDir = vscode.Uri.file(path.dirname(document.uri.fsPath));
   }
@@ -121,7 +161,6 @@ export class PreviewPanel {
 
     const config = vscode.workspace.getConfiguration("markdownSuper");
 
-    // 把文档目录转换为 webview 可访问的 URI
     const docDirUri = this._panel.webview.asWebviewUri(this._currentDocDir).toString();
 
     const msg = {
@@ -156,6 +195,9 @@ export class PreviewPanel {
         if (typeof message.line === "number") {
           this._revealLineInEditor(message.line as number);
         }
+        break;
+      case "closePreview":
+        this._closeAndRestore();
         break;
     }
   }

@@ -2,7 +2,7 @@
   "name": "markdown-super",
   "displayName": "Markdown Super",
   "description": "All-in-one Markdown preview & editing experience for VS Code — Mermaid, LaTeX, PlantUML, Markmap, and more.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "zanbowen",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -46,22 +46,22 @@
   "contributes": {
     "commands": [
       {
-        "command": "markdownSuper.openPreview",
+        "command": "markdownSuper.openPreviewToSide",
         "title": "Open Preview",
         "category": "Markdown Super",
         "icon": "$(open-preview)"
       },
       {
-        "command": "markdownSuper.openPreviewToSide",
-        "title": "Open Preview to the Side",
-        "category": "Markdown Super",
-        "icon": "$(open-preview)"
-      },
-      {
         "command": "markdownSuper.toggleTheme",
-        "title": "Toggle Preview Theme (Auto / Light)",
+        "title": "Toggle Preview Theme",
         "category": "Markdown Super",
         "icon": "$(color-mode)"
+      },
+      {
+        "command": "markdownSuper.editInSource",
+        "title": "Edit in Source",
+        "category": "Markdown Super",
+        "icon": "$(go-to-file)"
       },
       {
         "command": "markdownSuper.bold",
@@ -140,9 +140,28 @@
           "group": "navigation"
         },
         {
+          "command": "markdownSuper.editInSource",
+          "when": "markdownSuperPreviewActive",
+          "group": "navigation"
+        },
+        {
           "command": "markdownSuper.toggleTheme",
           "when": "markdownSuperPreviewActive",
           "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "markdownSuper.openPreviewToSide",
+          "when": "editorLangId == markdown",
+          "group": "markdownSuper"
+        }
+      ],
+      "webview/context": [
+        {
+          "command": "markdownSuper.editInSource",
+          "when": "markdownSuperPreviewActive",
+          "group": "markdownSuper"
         }
       ]
     },
@@ -159,6 +178,16 @@
     "configuration": {
       "title": "Markdown Super",
       "properties": {
+        "markdownSuper.previewMode": {
+          "type": "string",
+          "enum": ["side", "inplace"],
+          "enumDescriptions": [
+            "Open preview in a side column (split view)",
+            "Open preview in the same tab (replaces editor, toggle with same shortcut)"
+          ],
+          "default": "side",
+          "description": "Preview layout mode"
+        },
         "markdownSuper.mermaid.enabled": {
           "type": "boolean",
           "default": true,

@@ -32,23 +32,27 @@ export function activate(context: vscode.ExtensionContext) {
   // 注册字数统计状态栏
   const wordCount = new WordCountStatusBar();
   context.subscriptions.push(wordCount);
-  // 命令：在当前列打开预览
+  // 命令：打开预览（根据设置决定 side 或 inplace）
   context.subscriptions.push(
-    vscode.commands.registerCommand("markdownSuper.openPreview", () => {
+    vscode.commands.registerCommand("markdownSuper.openPreviewToSide", () => {
       const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === "markdown") {
-        PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Active);
+      if (!editor || editor.document.languageId !== "markdown") return;
+
+      const config = vscode.workspace.getConfiguration("markdownSuper");
+      const mode = config.get<string>("previewMode", "side");
+
+      if (mode === "inplace") {
+        PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Active, "inplace");
+      } else {
+        PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Beside, "side");
       }
     })
   );
 
-  // 命令：在侧边列打开预览
+  // 命令：关闭预览回到编辑器（右键菜单 "Edit in Source"）
   context.subscriptions.push(
-    vscode.commands.registerCommand("markdownSuper.openPreviewToSide", () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === "markdown") {
-        PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Beside);
-      }
+    vscode.commands.registerCommand("markdownSuper.editInSource", () => {
+      PreviewPanel.closeAndEdit();
     })
   );
 
