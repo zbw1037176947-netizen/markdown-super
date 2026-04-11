@@ -34,6 +34,9 @@ export async function renderMermaidBlocks(container: HTMLElement) {
       const { svg } = await mermaid.render(id, code);
       const wrapper = document.createElement("div");
       wrapper.className = "mermaid-rendered";
+      // 继承原 <pre> 的 data-line 属性
+      const dataLine = block.getAttribute("data-line");
+      if (dataLine) wrapper.setAttribute("data-line", dataLine);
       wrapper.innerHTML = svg;
       block.replaceWith(wrapper);
     } catch (err) {

@@ -24,6 +24,8 @@ export async function renderPlantUmlBlocks(container: HTMLElement) {
 
       const wrapper = document.createElement("div");
       wrapper.className = "plantuml-rendered";
+      const dataLine = block.getAttribute("data-line");
+      if (dataLine) wrapper.setAttribute("data-line", dataLine);
 
       const img = document.createElement("img");
       img.src = url;

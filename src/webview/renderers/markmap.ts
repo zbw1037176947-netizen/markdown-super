@@ -17,6 +17,8 @@ export async function renderMarkmapBlocks(container: HTMLElement) {
       const tree = parseMarkmapMarkdown(code);
       const wrapper = document.createElement("div");
       wrapper.className = "markmap-rendered";
+      const dataLine = block.getAttribute("data-line");
+      if (dataLine) wrapper.setAttribute("data-line", dataLine);
       wrapper.appendChild(renderTree(tree));
       block.replaceWith(wrapper);
     } catch (err) {
