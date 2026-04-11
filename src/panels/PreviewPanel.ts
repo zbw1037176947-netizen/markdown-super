@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-type PreviewTheme = "auto" | "light";
+const THEMES = ["github", "notion", "medium", "vue", "purple-night", "minimalist", "chinese-doc", "auto"] as const;
+type PreviewTheme = (typeof THEMES)[number];
 
 export class PreviewPanel {
   public static currentPanel: PreviewPanel | undefined;
@@ -12,7 +13,7 @@ export class PreviewPanel {
   private _currentDocUri: string | undefined;
   private _currentDocDir: vscode.Uri | undefined;
   private _lastMessage: unknown = null;
-  private _theme: PreviewTheme = "light";
+  private _themeIndex: number = 0; // 默认 github
   private _disposables: vscode.Disposable[] = [];
 
   public static createOrShow(
@@ -73,11 +74,13 @@ export class PreviewPanel {
   public static toggleTheme() {
     if (PreviewPanel.currentPanel) {
       const p = PreviewPanel.currentPanel;
-      p._theme = p._theme === "auto" ? "light" : "auto";
+      p._themeIndex = (p._themeIndex + 1) % THEMES.length;
+      const theme = THEMES[p._themeIndex];
       p._panel.webview.postMessage({
         type: "setTheme",
-        theme: p._theme,
+        theme,
       });
+      vscode.window.showInformationMessage(`Markdown Super: Theme → ${theme}`);
     }
   }
 
@@ -128,7 +131,7 @@ export class PreviewPanel {
       config: {
         mermaidEnabled: config.get<boolean>("mermaid.enabled", true),
         katexEnabled: config.get<boolean>("katex.enabled", true),
-        theme: this._theme,
+        theme: THEMES[this._themeIndex],
         fontSize: config.get<number>("fontSize", 16),
         lineNumbers: config.get<boolean>("codeBlock.lineNumbers", false),
       },

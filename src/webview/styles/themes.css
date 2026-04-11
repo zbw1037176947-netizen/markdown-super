@@ -1,0 +1,292 @@
+/* ===== Markdown Super 多主题系统 ===== */
+/* 通过 body[data-theme="xxx"] 切换主题 */
+
+/* ===== 1. GitHub（默认浅色） ===== */
+body[data-theme="github"] {
+  --ms-bg: #ffffff;
+  --ms-text: #1f2328;
+  --ms-text-secondary: #656d76;
+  --ms-border: #d0d7de;
+  --ms-accent: #0969da;
+  --ms-accent-subtle: #ddf4ff;
+  --ms-code-bg: #f6f8fa;
+  --ms-code-text: #d63384;
+  --ms-blockquote-border: #d0d7de;
+  --ms-blockquote-bg: transparent;
+  --ms-blockquote-text: #656d76;
+  --ms-table-header-bg: #f6f8fa;
+  --ms-table-stripe-bg: #f6f8fa;
+  --ms-table-hover-bg: #eef2ff;
+  --ms-heading-border: #d0d7de;
+  --ms-link-hover: #0969da;
+  --ms-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --ms-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --ms-font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --ms-font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+  --ms-font-size: 16px;
+  --ms-line-height: 1.6;
+  --ms-content-width: 900px;
+  --ms-heading-style: border; /* border | accent-left | gradient | plain */
+  --ms-hr-style: fade; /* fade | dots | stars | plain */
+  --ms-code-header-style: flat; /* flat | macos */
+
+  /* highlight.js 覆盖 */
+  --ms-hljs-keyword: #cf222e;
+  --ms-hljs-string: #0a3069;
+  --ms-hljs-title: #8250df;
+  --ms-hljs-comment: #6e7781;
+  --ms-hljs-number: #0550ae;
+  --ms-hljs-variable: #953800;
+}
+
+/* ===== 2. Notion ===== */
+body[data-theme="notion"] {
+  --ms-bg: #ffffff;
+  --ms-text: #37352f;
+  --ms-text-secondary: #787774;
+  --ms-border: #e3e3e0;
+  --ms-accent: #2eaadc;
+  --ms-accent-subtle: #ddf4ff;
+  --ms-code-bg: #f7f6f3;
+  --ms-code-text: #eb5757;
+  --ms-blockquote-border: #37352f;
+  --ms-blockquote-bg: transparent;
+  --ms-blockquote-text: #37352f;
+  --ms-table-header-bg: #f7f6f3;
+  --ms-table-stripe-bg: #fbfbfa;
+  --ms-table-hover-bg: #f1f1ef;
+  --ms-heading-border: transparent;
+  --ms-link-hover: #2eaadc;
+  --ms-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --ms-font-body: "Lyon Text", Georgia, "Times New Roman", serif;
+  --ms-font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --ms-font-mono: "SFMono-Regular", Menlo, Consolas, monospace;
+  --ms-font-size: 16px;
+  --ms-line-height: 1.5;
+  --ms-content-width: 900px;
+  --ms-heading-style: plain;
+  --ms-hr-style: plain;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #cf222e;
+  --ms-hljs-string: #0a3069;
+  --ms-hljs-title: #8250df;
+  --ms-hljs-comment: #6e7781;
+  --ms-hljs-number: #0550ae;
+  --ms-hljs-variable: #953800;
+}
+
+/* ===== 3. Medium ===== */
+body[data-theme="medium"] {
+  --ms-bg: #ffffff;
+  --ms-text: #242424;
+  --ms-text-secondary: #757575;
+  --ms-border: #e6e6e6;
+  --ms-accent: #1a8917;
+  --ms-accent-subtle: #e6f7e5;
+  --ms-code-bg: #f2f2f2;
+  --ms-code-text: #d63384;
+  --ms-blockquote-border: transparent;
+  --ms-blockquote-bg: transparent;
+  --ms-blockquote-text: #757575;
+  --ms-table-header-bg: #f2f2f2;
+  --ms-table-stripe-bg: #f9f9f9;
+  --ms-table-hover-bg: #f2f2f2;
+  --ms-heading-border: transparent;
+  --ms-link-hover: #1a8917;
+  --ms-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  --ms-font-body: "Source Serif Pro", "Charter", Georgia, "Times New Roman", serif;
+  --ms-font-heading: "Sohne", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ms-font-mono: "Source Code Pro", Menlo, monospace;
+  --ms-font-size: 20px;
+  --ms-line-height: 1.75;
+  --ms-content-width: 680px;
+  --ms-heading-style: plain;
+  --ms-hr-style: stars;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #cf222e;
+  --ms-hljs-string: #0a3069;
+  --ms-hljs-title: #8250df;
+  --ms-hljs-comment: #6e7781;
+  --ms-hljs-number: #0550ae;
+  --ms-hljs-variable: #953800;
+}
+
+/* ===== 4. Vue ===== */
+body[data-theme="vue"] {
+  --ms-bg: #ffffff;
+  --ms-text: #2c3e50;
+  --ms-text-secondary: #6a8bad;
+  --ms-border: #eaecef;
+  --ms-accent: #42b983;
+  --ms-accent-subtle: #e8f7f0;
+  --ms-code-bg: #f8f8f8;
+  --ms-code-text: #e96900;
+  --ms-blockquote-border: #42b983;
+  --ms-blockquote-bg: #f0faf5;
+  --ms-blockquote-text: #2c3e50;
+  --ms-table-header-bg: #f0f0f0;
+  --ms-table-stripe-bg: #fafafa;
+  --ms-table-hover-bg: #e8f7f0;
+  --ms-heading-border: transparent;
+  --ms-link-hover: #42b983;
+  --ms-shadow: 0 4px 16px rgba(66, 185, 131, 0.08);
+  --ms-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ms-font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ms-font-mono: "Source Code Pro", "Fira Code", Menlo, monospace;
+  --ms-font-size: 16px;
+  --ms-line-height: 1.7;
+  --ms-content-width: 900px;
+  --ms-heading-style: accent-left;
+  --ms-hr-style: fade;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #e96900;
+  --ms-hljs-string: #42b983;
+  --ms-hljs-title: #3eaf7c;
+  --ms-hljs-comment: #6a8bad;
+  --ms-hljs-number: #e96900;
+  --ms-hljs-variable: #c25;
+}
+
+/* ===== 5. Purple Night（暗色） ===== */
+body[data-theme="purple-night"] {
+  --ms-bg: #1e1e2e;
+  --ms-text: #cdd6f4;
+  --ms-text-secondary: #a6adc8;
+  --ms-border: #45475a;
+  --ms-accent: #cba6f7;
+  --ms-accent-subtle: #2a2040;
+  --ms-code-bg: #181825;
+  --ms-code-text: #f38ba8;
+  --ms-blockquote-border: #cba6f7;
+  --ms-blockquote-bg: rgba(203, 166, 247, 0.06);
+  --ms-blockquote-text: #a6adc8;
+  --ms-table-header-bg: #181825;
+  --ms-table-stripe-bg: rgba(255, 255, 255, 0.02);
+  --ms-table-hover-bg: rgba(203, 166, 247, 0.08);
+  --ms-heading-border: #45475a;
+  --ms-link-hover: #cba6f7;
+  --ms-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --ms-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ms-font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ms-font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+  --ms-font-size: 16px;
+  --ms-line-height: 1.7;
+  --ms-content-width: 900px;
+  --ms-heading-style: gradient;
+  --ms-hr-style: dots;
+  --ms-code-header-style: macos;
+
+  --ms-hljs-keyword: #cba6f7;
+  --ms-hljs-string: #a6e3a1;
+  --ms-hljs-title: #89b4fa;
+  --ms-hljs-comment: #6c7086;
+  --ms-hljs-number: #fab387;
+  --ms-hljs-variable: #f38ba8;
+}
+
+/* ===== 6. Minimalist ===== */
+body[data-theme="minimalist"] {
+  --ms-bg: #fefefe;
+  --ms-text: #333333;
+  --ms-text-secondary: #999999;
+  --ms-border: #eeeeee;
+  --ms-accent: #333333;
+  --ms-accent-subtle: #f5f5f5;
+  --ms-code-bg: #f5f5f5;
+  --ms-code-text: #c7254e;
+  --ms-blockquote-border: #cccccc;
+  --ms-blockquote-bg: transparent;
+  --ms-blockquote-text: #666666;
+  --ms-table-header-bg: #f5f5f5;
+  --ms-table-stripe-bg: #fafafa;
+  --ms-table-hover-bg: #f0f0f0;
+  --ms-heading-border: transparent;
+  --ms-link-hover: #0066cc;
+  --ms-shadow: none;
+  --ms-font-body: "iA Writer Duo", "IBM Plex Mono", "Menlo", monospace;
+  --ms-font-heading: "iA Writer Duo", "IBM Plex Mono", "Menlo", monospace;
+  --ms-font-mono: "iA Writer Mono", "IBM Plex Mono", "Menlo", monospace;
+  --ms-font-size: 18px;
+  --ms-line-height: 1.8;
+  --ms-content-width: 640px;
+  --ms-heading-style: plain;
+  --ms-hr-style: plain;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #a626a4;
+  --ms-hljs-string: #50a14f;
+  --ms-hljs-title: #4078f2;
+  --ms-hljs-comment: #a0a1a7;
+  --ms-hljs-number: #986801;
+  --ms-hljs-variable: #e45649;
+}
+
+/* ===== 7. Chinese Doc（中文优化） ===== */
+body[data-theme="chinese-doc"] {
+  --ms-bg: #ffffff;
+  --ms-text: #262626;
+  --ms-text-secondary: #8c8c8c;
+  --ms-border: #f0f0f0;
+  --ms-accent: #00b96b;
+  --ms-accent-subtle: #e6fffb;
+  --ms-code-bg: #fafafa;
+  --ms-code-text: #c41d7f;
+  --ms-blockquote-border: #00b96b;
+  --ms-blockquote-bg: #f6ffed;
+  --ms-blockquote-text: #262626;
+  --ms-table-header-bg: #fafafa;
+  --ms-table-stripe-bg: #fafafa;
+  --ms-table-hover-bg: #e6fffb;
+  --ms-heading-border: transparent;
+  --ms-link-hover: #00b96b;
+  --ms-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --ms-font-body: -apple-system, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --ms-font-heading: -apple-system, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --ms-font-mono: "JetBrains Mono", "Sarasa Mono SC", "Source Code Pro", Menlo, monospace;
+  --ms-font-size: 15px;
+  --ms-line-height: 1.74;
+  --ms-content-width: 900px;
+  --ms-heading-style: accent-left;
+  --ms-hr-style: fade;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #cf222e;
+  --ms-hljs-string: #0a3069;
+  --ms-hljs-title: #8250df;
+  --ms-hljs-comment: #6e7781;
+  --ms-hljs-number: #0550ae;
+  --ms-hljs-variable: #953800;
+}
+
+/* ===== "跟随 VS Code" 主题（使用 VS Code CSS 变量） ===== */
+body[data-theme="auto"] {
+  --ms-bg: var(--vscode-editor-background);
+  --ms-text: var(--vscode-editor-foreground);
+  --ms-text-secondary: var(--vscode-descriptionForeground, #888);
+  --ms-border: var(--vscode-editorWidget-border, #444);
+  --ms-accent: var(--vscode-textLink-foreground, #3794ff);
+  --ms-accent-subtle: rgba(55, 148, 255, 0.1);
+  --ms-code-bg: var(--vscode-textCodeBlock-background, #1e1e1e);
+  --ms-code-text: inherit;
+  --ms-blockquote-border: var(--vscode-textLink-foreground, #3794ff);
+  --ms-blockquote-bg: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+  --ms-blockquote-text: var(--vscode-textBlockQuote-foreground, inherit);
+  --ms-table-header-bg: var(--vscode-editor-selectionBackground, #264f78);
+  --ms-table-stripe-bg: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.04));
+  --ms-table-hover-bg: rgba(255, 255, 255, 0.08);
+  --ms-heading-border: var(--vscode-editorWidget-border, #444);
+  --ms-link-hover: var(--vscode-textLink-activeForeground, #3794ff);
+  --ms-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --ms-font-body: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, sans-serif);
+  --ms-font-heading: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, sans-serif);
+  --ms-font-mono: var(--vscode-editor-fontFamily, "Fira Code", Consolas, monospace);
+  --ms-font-size: 16px;
+  --ms-line-height: 1.6;
+  --ms-content-width: 900px;
+  --ms-heading-style: border;
+  --ms-hr-style: fade;
+  --ms-code-header-style: flat;
+}

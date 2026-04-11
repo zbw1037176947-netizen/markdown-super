@@ -83,11 +83,23 @@ initPreviewSearch(previewEl);
 initFloatingToc();
 initImageZoom(previewEl);
 
+// ===== 阅读进度条 =====
+const progressBar = document.createElement("div");
+progressBar.className = "reading-progress";
+document.body.prepend(progressBar);
+
+window.addEventListener("scroll", () => {
+  const scrollTop = document.documentElement.scrollTop;
+  const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+  progressBar.style.width = `${progress}%`;
+}, { passive: true });
+
 // ===== 状态 =====
 let currentConfig = {
   mermaidEnabled: true,
   katexEnabled: true,
-  theme: "auto" as "auto" | "light",
+  theme: "github",
   fontSize: 16,
   lineNumbers: false,
 };
@@ -240,9 +252,25 @@ function scrollPreviewToLine(line: number) {
 
 // ===== 主题 =====
 
-function applyTheme(theme: "auto" | "light") {
-  document.body.classList.remove("theme-auto", "theme-light");
-  document.body.classList.add(`theme-${theme}`);
+// 主题列表，定义各主题的样式变体属性
+const THEME_STYLES: Record<string, { headingStyle: string; hrStyle: string; codeHeader: string }> = {
+  auto:           { headingStyle: "border",      hrStyle: "fade",  codeHeader: "flat" },
+  github:         { headingStyle: "border",      hrStyle: "fade",  codeHeader: "flat" },
+  notion:         { headingStyle: "plain",       hrStyle: "plain", codeHeader: "flat" },
+  medium:         { headingStyle: "plain",       hrStyle: "stars", codeHeader: "flat" },
+  vue:            { headingStyle: "accent-left", hrStyle: "fade",  codeHeader: "flat" },
+  "purple-night": { headingStyle: "gradient",    hrStyle: "dots",  codeHeader: "macos" },
+  minimalist:     { headingStyle: "plain",       hrStyle: "plain", codeHeader: "flat" },
+  "chinese-doc":  { headingStyle: "accent-left", hrStyle: "fade",  codeHeader: "flat" },
+};
+
+function applyTheme(theme: string) {
+  document.body.setAttribute("data-theme", theme);
+
+  const styles = THEME_STYLES[theme] || THEME_STYLES.github;
+  document.body.setAttribute("data-heading-style", styles.headingStyle);
+  document.body.setAttribute("data-hr-style", styles.hrStyle);
+  document.body.setAttribute("data-code-header", styles.codeHeader);
 }
 
 // ===== 消息监听 =====
@@ -253,7 +281,7 @@ window.addEventListener("message", (event) => {
     case "update":
       currentConfig = { ...currentConfig, ...message.config };
       if (message.baseUri) baseUri = message.baseUri as string;
-      applyTheme(currentConfig.theme);
+      applyTheme(currentConfig.theme as string);
       scheduleRender(message.content);
       break;
     case "scrollToLine":
@@ -261,7 +289,7 @@ window.addEventListener("message", (event) => {
       break;
     case "setTheme":
       currentConfig.theme = message.theme;
-      applyTheme(message.theme);
+      applyTheme(message.theme as string);
       break;
   }
 });
