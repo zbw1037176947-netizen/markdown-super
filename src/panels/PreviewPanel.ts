@@ -26,14 +26,15 @@ export class PreviewPanel {
     mode: PreviewMode = "side"
   ) {
     if (PreviewPanel.currentPanel) {
-      // 如果是 inplace 模式且预览已打开，toggle 关闭
-      if (mode === "inplace" && PreviewPanel.currentPanel._mode === "inplace") {
-        PreviewPanel.currentPanel._closeAndRestore();
+      const cur = PreviewPanel.currentPanel;
+      // inplace 模式：预览当前可见时 toggle 关闭，不可见时 reveal
+      if (mode === "inplace" && cur._mode === "inplace" && cur._panel.visible) {
+        cur._closeAndRestore();
         return;
       }
-      PreviewPanel.currentPanel._panel.reveal(column);
-      PreviewPanel.currentPanel._updateResourceRoots(document);
-      PreviewPanel.currentPanel._update(document);
+      cur._panel.reveal(column);
+      cur._updateResourceRoots(document);
+      cur._update(document);
       return;
     }
 
