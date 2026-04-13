@@ -96,9 +96,10 @@ window.addEventListener("scroll", () => {
 }, { passive: true });
 
 // ===== 追踪最后交互的源码行号 =====
-let lastInteractedLine = 0;
+// -1 表示"尚未有明确位置"，不应主动上报
+let lastInteractedLine = -1;
 
-// 点击或右键时，找到最近的 data-line 元素记录行号
+// 点击/右键：立即更新为点击元素所在的 data-line（优先使用）
 document.addEventListener("mousedown", (e) => {
   const target = e.target as HTMLElement;
   const lineEl = target.closest("[data-line]");
@@ -106,23 +107,7 @@ document.addEventListener("mousedown", (e) => {
     const line = parseInt(lineEl.getAttribute("data-line")!, 10);
     if (!isNaN(line)) lastInteractedLine = line;
   }
-});
-
-// 滚动时也更新（取视口中间的 data-line 元素）
-window.addEventListener("scroll", () => {
-  const viewportMid = window.scrollY + window.innerHeight / 2;
-  let closest = 0;
-  let closestDist = Infinity;
-  previewEl.querySelectorAll("[data-line]").forEach((el) => {
-    const htmlEl = el as HTMLElement;
-    const dist = Math.abs(htmlEl.offsetTop - viewportMid);
-    if (dist < closestDist) {
-      closestDist = dist;
-      closest = parseInt(el.getAttribute("data-line")!, 10) || 0;
-    }
-  });
-  lastInteractedLine = closest;
-}, { passive: true });
+}, true);
 
 // ===== 状态 =====
 let currentConfig = {
@@ -226,6 +211,9 @@ async function doRender(markdown: string) {
   buildLineCache();
   updateFloatingToc(previewEl);
   document.documentElement.scrollTop = scrollTop;
+
+  // 通知扩展渲染完成（扩展可能在等这个信号来执行初始滚动同步）
+  vscode.postMessage({ type: "rendered" });
 }
 
 // ===== 滚动同步 =====
@@ -240,13 +228,46 @@ function buildLineCache() {
       lineElements.push({ line, el: el as HTMLElement });
     }
   });
+  // 按 line 升序（DOM 顺序通常已经是升序，但图表后处理可能改变）
+  lineElements.sort((a, b) => a.line - b.line);
 }
 
-let lastScrollLine = -1;
+/**
+ * 用户滚动时：用视口中间位置反推 data-line，更新 lastInteractedLine
+ * 用二分查找 + 缓存，不遍历 DOM
+ * 程序滚动时不更新
+ */
+let scrollTrackingRaf: number | null = null;
+function updateLastInteractedFromScroll() {
+  if (isProgrammaticScroll) return;
+  if (lineElements.length === 0) return;
+
+  const viewportMid = window.scrollY + window.innerHeight / 3; // 偏上 1/3 作为锚点，更符合阅读习惯
+
+  // 二分查找：找到最接近 viewportMid 的元素
+  let lo = 0;
+  let hi = lineElements.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (lineElements[mid].el.offsetTop < viewportMid) lo = mid + 1;
+    else hi = mid;
+  }
+  // 取 lo 和 lo-1 中更接近 viewportMid 的
+  const a = lineElements[lo];
+  const b = lo > 0 ? lineElements[lo - 1] : a;
+  const target = Math.abs(a.el.offsetTop - viewportMid) < Math.abs(b.el.offsetTop - viewportMid) ? a : b;
+  if (target) lastInteractedLine = target.line;
+}
+
+window.addEventListener("scroll", () => {
+  if (scrollTrackingRaf !== null) return; // rAF 节流
+  scrollTrackingRaf = requestAnimationFrame(() => {
+    scrollTrackingRaf = null;
+    updateLastInteractedFromScroll();
+  });
+}, { passive: true });
 
 function scrollPreviewToLine(line: number) {
-  if (line === lastScrollLine) return;
-  lastScrollLine = line;
   if (lineElements.length === 0) return;
 
   let lo = 0;
@@ -276,7 +297,10 @@ function scrollPreviewToLine(line: number) {
 
   isProgrammaticScroll = true;
   window.scrollTo({ top: Math.max(0, scrollTarget), behavior: "instant" as ScrollBehavior });
-  requestAnimationFrame(() => { isProgrammaticScroll = false; });
+  // 程序滚动触发的 scroll 事件要等下一个事件循环后才触发，延迟解除标记避免被 scroll 监听误更新
+  setTimeout(() => { isProgrammaticScroll = false; }, 100);
+  // 同步更新 lastInteractedLine 为目标行（因为我们主动滚到了这里）
+  lastInteractedLine = line;
 }
 
 // ===== 主题 =====

@@ -43,14 +43,14 @@ export function activate(context: vscode.ExtensionContext) {
 
       const cursorLine = editor.selection.active.line;
 
+      // 先设置挂起的滚动位置，createOrShow 后 webview 渲染完会自动执行
+      PreviewPanel.requestScrollAfterRender(cursorLine);
+
       if (mode === "inplace") {
         PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Active, "inplace");
       } else {
         PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Beside, "side");
       }
-
-      // 打开后滚动到编辑器当前光标位置
-      setTimeout(() => PreviewPanel.scrollToLine(cursorLine), 300);
     })
   );
 
@@ -86,28 +86,46 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // 监听编辑器可见范围变化（滚动时触发），同步预览滚动
+  // 监听编辑器滚动/光标变化 → 同步预览
+  // 使用单一锚点行逻辑 + 节流，避免两个事件竞争
+  let syncTimer: ReturnType<typeof setTimeout> | null = null;
+  const requestSync = (editor: vscode.TextEditor) => {
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => {
+      if (editor.document.languageId !== "markdown") return;
+
+      // 策略：优先用光标行（如果光标在可见区域内）；否则用可见区域的顶部第 1/3 位置
+      const cursorLine = editor.selection.active.line;
+      const ranges = editor.visibleRanges;
+      if (ranges.length === 0) return;
+
+      const topLine = ranges[0].start.line;
+      const botLine = ranges[0].end.line;
+
+      // 光标可见 → 用光标；否则用视口上 1/3 的行
+      let syncLine: number;
+      if (cursorLine >= topLine && cursorLine <= botLine) {
+        syncLine = cursorLine;
+      } else {
+        syncLine = topLine + Math.floor((botLine - topLine) / 3);
+      }
+
+      PreviewPanel.scrollToLine(syncLine);
+    }, 30);
+  };
+
   context.subscriptions.push(
     vscode.window.onDidChangeTextEditorVisibleRanges((e) => {
       if (e.textEditor.document.languageId === "markdown") {
-        // 取可见区域的中间行作为同步目标
-        const ranges = e.visibleRanges;
-        if (ranges.length > 0) {
-          const midLine = Math.floor(
-            (ranges[0].start.line + ranges[0].end.line) / 2
-          );
-          PreviewPanel.scrollToLine(midLine);
-        }
+        requestSync(e.textEditor);
       }
     })
   );
 
-  // 监听光标位置变化（点击、键盘移动），同步预览滚动
   context.subscriptions.push(
     vscode.window.onDidChangeTextEditorSelection((e) => {
       if (e.textEditor.document.languageId === "markdown") {
-        const line = e.selections[0].active.line;
-        PreviewPanel.scrollToLine(line);
+        requestSync(e.textEditor);
       }
     })
   );

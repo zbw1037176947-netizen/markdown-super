@@ -17,6 +17,7 @@ export class PreviewPanel {
   private _mode: PreviewMode = "side";
   private _lastMessage: unknown = null;
   private _themeIndex: number = 0;
+  private _pendingScrollLine: number | null = null; // 渲染完成后要滚到的目标行
   private _disposables: vscode.Disposable[] = [];
 
   public static createOrShow(
@@ -92,6 +93,15 @@ export class PreviewPanel {
         type: "scrollToLine",
         line,
       });
+    }
+  }
+
+  /**
+   * 请求在下次渲染完成后滚动到指定行（用于打开预览后初始定位）
+   */
+  public static requestScrollAfterRender(line: number) {
+    if (PreviewPanel.currentPanel) {
+      PreviewPanel.currentPanel._pendingScrollLine = line;
     }
   }
 
@@ -207,6 +217,14 @@ export class PreviewPanel {
         break;
       case "closePreview":
         this._closeAndRestore(typeof message.line === "number" ? (message.line as number) : undefined);
+        break;
+      case "rendered":
+        // webview 渲染完成，执行挂起的滚动请求
+        if (this._pendingScrollLine !== null) {
+          const line = this._pendingScrollLine;
+          this._pendingScrollLine = null;
+          this._panel.webview.postMessage({ type: "scrollToLine", line });
+        }
         break;
     }
   }
