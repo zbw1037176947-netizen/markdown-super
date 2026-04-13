@@ -24,7 +24,8 @@ export class PreviewPanel {
     context: vscode.ExtensionContext,
     document: vscode.TextDocument,
     column: vscode.ViewColumn,
-    mode: PreviewMode = "side"
+    mode: PreviewMode = "side",
+    initialLine?: number
   ) {
     if (PreviewPanel.currentPanel) {
       const cur = PreviewPanel.currentPanel;
@@ -36,6 +37,10 @@ export class PreviewPanel {
       cur._panel.reveal(column);
       cur._updateResourceRoots(document);
       cur._update(document);
+      // 已存在的 panel reveal 后也跳到目标行
+      if (initialLine !== undefined) {
+        PreviewPanel.scrollToLine(initialLine);
+      }
       return;
     }
 
@@ -66,7 +71,8 @@ export class PreviewPanel {
       panel,
       context.extensionUri,
       document,
-      mode
+      mode,
+      initialLine
     );
   }
 
@@ -122,13 +128,18 @@ export class PreviewPanel {
     panel: vscode.WebviewPanel,
     extensionUri: vscode.Uri,
     document: vscode.TextDocument,
-    mode: PreviewMode
+    mode: PreviewMode,
+    initialLine?: number
   ) {
     this._panel = panel;
     this._extensionUri = extensionUri;
     this._currentDocDir = vscode.Uri.file(path.dirname(document.uri.fsPath));
     this._mode = mode;
     this._sourceDocUri = document.uri.toString();
+    // 首次打开时的初始定位行，渲染完成后执行
+    if (initialLine !== undefined) {
+      this._pendingScrollLine = initialLine;
+    }
 
     this._panel.webview.html = this._getHtml(this._panel.webview);
     this._update(document);

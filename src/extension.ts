@@ -43,12 +43,11 @@ export function activate(context: vscode.ExtensionContext) {
 
       // 用"视口顶部行"作为初始定位锚点（不是光标行），保持与滚动同步一致
       const topLine = editor.visibleRanges[0]?.start.line ?? editor.selection.active.line;
-      PreviewPanel.requestScrollAfterRender(topLine);
 
       if (mode === "inplace") {
-        PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Active, "inplace");
+        PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Active, "inplace", topLine);
       } else {
-        PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Beside, "side");
+        PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Beside, "side", topLine);
       }
     })
   );
