@@ -145,29 +145,25 @@ export class PreviewPanel {
   }
 
   /**
-   * 关闭预览，如果是 inplace 模式则恢复编辑器并跳到指定行
+   * "Edit in Source" 处理 —— 聚焦编辑器并跳到 line，不关闭预览
    */
   private _closeAndRestore(line?: number) {
     const sourceUri = this._sourceDocUri;
-    const wasInplace = this._mode === "inplace";
+    if (!sourceUri) return;
 
-    this._panel.dispose();
+    const doc = vscode.workspace.textDocuments.find(
+      (d) => d.uri.toString() === sourceUri
+    );
+    if (!doc) return;
 
-    if (sourceUri) {
-      const doc = vscode.workspace.textDocuments.find(
-        (d) => d.uri.toString() === sourceUri
-      );
-      if (doc) {
-        vscode.window.showTextDocument(doc, wasInplace ? vscode.ViewColumn.Active : undefined).then((editor) => {
-          if (line !== undefined && line >= 0) {
-            const pos = new vscode.Position(line, 0);
-            editor.selection = new vscode.Selection(pos, pos);
-            // AtTop 把目标行放到视口顶部，与预览的视口对齐策略一致
-            editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.AtTop);
-          }
-        });
+    // 在"第一个编辑器列"打开文档（预览保持不动）
+    vscode.window.showTextDocument(doc, vscode.ViewColumn.One, false).then((editor) => {
+      if (line !== undefined && line >= 0) {
+        const pos = new vscode.Position(line, 0);
+        editor.selection = new vscode.Selection(pos, pos);
+        editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.AtTop);
       }
-    }
+    });
   }
 
   private _updateResourceRoots(document: vscode.TextDocument) {
