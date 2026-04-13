@@ -2,7 +2,7 @@
   "name": "markdown-super",
   "displayName": "Markdown Super",
   "description": "All-in-one Markdown preview & editing experience for VS Code — Mermaid, LaTeX, PlantUML, Markmap, and more.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "zanbowen",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -180,7 +180,10 @@
       "properties": {
         "markdownSuper.previewMode": {
           "type": "string",
-          "enum": ["side", "inplace"],
+          "enum": [
+            "side",
+            "inplace"
+          ],
           "enumDescriptions": [
             "Open preview in a side column (split view)",
             "Open preview in the same tab (replaces editor, toggle with same shortcut)"
