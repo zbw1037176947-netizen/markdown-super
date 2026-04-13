@@ -215,6 +215,11 @@
           "type": "string",
           "default": "./assets",
           "description": "Directory to save pasted/dropped images (relative to the markdown file)"
+        },
+        "markdownSuper.plantuml.server": {
+          "type": "string",
+          "default": "",
+          "description": "PlantUML server URL. Leave empty to use the public server at plantuml.com. For private/enterprise use, set your self-hosted PlantUML server URL (e.g. https://plantuml.example.com/plantuml). WARNING: PlantUML diagrams are sent to this server for rendering."
         }
       }
     }
@@ -229,6 +234,7 @@
   "devDependencies": {
     "@types/markdown-it": "^14.1.0",
     "@types/node": "^22.0.0",
+    "@types/pako": "^2.0.4",
     "@types/vscode": "^1.90.0",
     "@vscode/vsce": "^3.0.0",
     "esbuild": "^0.24.0",
@@ -243,6 +249,7 @@
     "markdown-it-emoji": "^3.0.0",
     "markdown-it-footnote": "^4.0.0",
     "markdown-it-task-lists": "^2.1.0",
-    "mermaid": "^11.4.0"
+    "mermaid": "^11.4.0",
+    "pako": "^2.1.0"
   }
 }

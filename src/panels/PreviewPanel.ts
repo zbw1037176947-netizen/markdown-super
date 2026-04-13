@@ -204,6 +204,7 @@ export class PreviewPanel {
         theme: THEMES[this._themeIndex],
         fontSize: config.get<number>("fontSize", 16),
         lineNumbers: config.get<boolean>("codeBlock.lineNumbers", false),
+        plantumlServer: config.get<string>("plantuml.server", ""),
       },
     };
     this._lastMessage = msg;

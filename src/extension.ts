@@ -90,6 +90,9 @@ export function activate(context: vscode.ExtensionContext) {
   const syncPreview = (editor: vscode.TextEditor) => {
     if (syncTimer) clearTimeout(syncTimer);
     syncTimer = setTimeout(() => {
+      // 校验编辑器仍是当前活跃的 markdown 编辑器，防止切换文档后旧事件误同步
+      const activeEditor = vscode.window.activeTextEditor;
+      if (activeEditor !== editor) return;
       if (editor.document.languageId !== "markdown") return;
       const ranges = editor.visibleRanges;
       if (ranges.length === 0) return;

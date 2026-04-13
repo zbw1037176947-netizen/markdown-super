@@ -1,18 +1,21 @@
 /**
  * PlantUML 渲染器
  *
- * 使用 PlantUML 官方服务端编码方案，将代码编码为 URL，通过 <img> 标签渲染 SVG。
- * 这里用的是纯客户端编码（deflate + Base64 变种），无需 WASM。
- * 图片由 PlantUML 在线服务渲染（可配置自建服务器）。
+ * 使用官方 deflate + Base64 变种编码（参考 https://plantuml.com/text-encoding），
+ * 相比 hex 编码大幅减小 URL 长度，支持大型图表。
  *
- * 注：后续如果需要完全离线，可替换为 plantuml-wasm。
+ * 服务器地址可通过 markdownSuper.plantuml.server 配置，默认公共实例。
  */
 
-const PLANTUML_SERVER = "https://www.plantuml.com/plantuml";
+import * as pako from "pako";
 
-export async function renderPlantUmlBlocks(container: HTMLElement) {
+const DEFAULT_SERVER = "https://www.plantuml.com/plantuml";
+
+export async function renderPlantUmlBlocks(container: HTMLElement, serverUrl?: string) {
   const blocks = container.querySelectorAll("pre.plantuml-block");
   if (blocks.length === 0) return;
+
+  const server = (serverUrl || DEFAULT_SERVER).replace(/\/+$/, "");
 
   for (const block of blocks) {
     const code = block.textContent?.trim();
@@ -20,7 +23,7 @@ export async function renderPlantUmlBlocks(container: HTMLElement) {
 
     try {
       const encoded = encodePlantUml(code);
-      const url = `${PLANTUML_SERVER}/svg/${encoded}`;
+      const url = `${server}/svg/${encoded}`;
 
       const wrapper = document.createElement("div");
       wrapper.className = "plantuml-rendered";
@@ -32,7 +35,7 @@ export async function renderPlantUmlBlocks(container: HTMLElement) {
       img.alt = "PlantUML diagram";
       img.style.maxWidth = "100%";
       img.onerror = () => {
-        wrapper.innerHTML = `<div class="plantuml-error">PlantUML rendering failed. Check your diagram syntax.</div>`;
+        wrapper.innerHTML = `<div class="plantuml-error">PlantUML rendering failed. Check your diagram syntax or server URL (<code>${escapeHtml(server)}</code>).</div>`;
       };
 
       wrapper.appendChild(img);
@@ -47,13 +50,41 @@ export async function renderPlantUmlBlocks(container: HTMLElement) {
 }
 
 /**
- * PlantUML 文本编码（官方 deflate 编码方案）
+ * PlantUML 文本编码：UTF-8 → deflate（raw, 无 zlib header）→ Base64 变种
  * 参考：https://plantuml.com/text-encoding
  */
 function encodePlantUml(text: string): string {
-  // 简化方案：使用 hex 编码（兼容性最好）
-  const hex = Array.from(new TextEncoder().encode(text))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return "~h" + hex;
+  const utf8 = new TextEncoder().encode(text);
+  const compressed = pako.deflateRaw(utf8, { level: 9 });
+  return encode64(compressed);
+}
+
+/**
+ * PlantUML 专用的 Base64 变种（非标准字符映射表）
+ */
+const PLANTUML_B64 =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+
+function encode64(data: Uint8Array): string {
+  let result = "";
+  for (let i = 0; i < data.length; i += 3) {
+    const b1 = data[i];
+    const b2 = i + 1 < data.length ? data[i + 1] : 0;
+    const b3 = i + 2 < data.length ? data[i + 2] : 0;
+
+    result += PLANTUML_B64[(b1 >> 2) & 0x3f];
+    result += PLANTUML_B64[((b1 << 4) | (b2 >> 4)) & 0x3f];
+    result += PLANTUML_B64[((b2 << 2) | (b3 >> 6)) & 0x3f];
+    result += PLANTUML_B64[b3 & 0x3f];
+  }
+  return result;
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }

@@ -116,6 +116,7 @@ let currentConfig = {
   theme: "github",
   fontSize: 16,
   lineNumbers: false,
+  plantumlServer: "",
 };
 
 // 文档目录的 webview URI（用于解析相对路径图片）
@@ -145,14 +146,17 @@ async function doRender(markdown: string) {
   enhanceCodeBlocks(previewEl, currentConfig.lineNumbers);
 
   // 解析图片相对路径 → webview URI
+  // 用 data-resolved 标记已处理，避免重复解析；正则合并判断
   if (baseUri) {
-    previewEl.querySelectorAll("img").forEach((img) => {
+    const base = baseUri.replace(/\/+$/, "");
+    const SKIP = /^(https?:\/\/|data:|vscode-|file:)/i;
+    previewEl.querySelectorAll("img:not([data-resolved])").forEach((img) => {
       const src = img.getAttribute("src");
-      if (src && !src.startsWith("http") && !src.startsWith("data:") && !src.startsWith("vscode-")) {
-        // 相对路径：拼接 baseUri
-        const resolved = baseUri + "/" + src.replace(/^\.\//, "");
-        img.setAttribute("src", resolved);
+      if (src && !SKIP.test(src)) {
+        const cleaned = src.replace(/^\.?\//, "");
+        img.setAttribute("src", `${base}/${cleaned}`);
       }
+      img.setAttribute("data-resolved", "1");
     });
   }
 
@@ -162,7 +166,7 @@ async function doRender(markdown: string) {
   if (currentConfig.mermaidEnabled) {
     renderTasks.push(renderMermaidBlocks(previewEl));
   }
-  renderTasks.push(renderPlantUmlBlocks(previewEl));
+  renderTasks.push(renderPlantUmlBlocks(previewEl, currentConfig.plantumlServer));
   renderTasks.push(renderMarkmapBlocks(previewEl));
 
   await Promise.all(renderTasks);
@@ -341,15 +345,54 @@ function applyTheme(theme: string) {
   document.body.setAttribute("data-code-header", styles.codeHeader);
 }
 
-// ===== 消息监听 =====
+// ===== 消息监听（带结构验证）=====
+
+type IncomingMessage =
+  | { type: "update"; content: string; baseUri?: string; config?: Partial<typeof currentConfig> }
+  | { type: "scrollToLine"; line: number }
+  | { type: "setTheme"; theme: string }
+  | { type: "requestClose" };
+
+function isObject(x: unknown): x is Record<string, unknown> {
+  return typeof x === "object" && x !== null;
+}
+
+function parseMessage(raw: unknown): IncomingMessage | null {
+  if (!isObject(raw)) return null;
+  const t = raw.type;
+  if (typeof t !== "string") return null;
+
+  switch (t) {
+    case "update":
+      if (typeof raw.content !== "string") return null;
+      return {
+        type: "update",
+        content: raw.content,
+        baseUri: typeof raw.baseUri === "string" ? raw.baseUri : undefined,
+        config: isObject(raw.config) ? (raw.config as Partial<typeof currentConfig>) : undefined,
+      };
+    case "scrollToLine":
+      if (typeof raw.line !== "number" || !Number.isFinite(raw.line)) return null;
+      return { type: "scrollToLine", line: raw.line };
+    case "setTheme":
+      if (typeof raw.theme !== "string") return null;
+      return { type: "setTheme", theme: raw.theme };
+    case "requestClose":
+      return { type: "requestClose" };
+    default:
+      return null;
+  }
+}
 
 window.addEventListener("message", (event) => {
-  const message = event.data;
+  const message = parseMessage(event.data);
+  if (!message) return;
+
   switch (message.type) {
     case "update":
-      currentConfig = { ...currentConfig, ...message.config };
-      if (message.baseUri) baseUri = message.baseUri as string;
-      applyTheme(currentConfig.theme as string);
+      if (message.config) currentConfig = { ...currentConfig, ...message.config };
+      if (message.baseUri) baseUri = message.baseUri;
+      applyTheme(currentConfig.theme);
       scheduleRender(message.content);
       break;
     case "scrollToLine":
@@ -357,10 +400,9 @@ window.addEventListener("message", (event) => {
       break;
     case "setTheme":
       currentConfig.theme = message.theme;
-      applyTheme(message.theme as string);
+      applyTheme(message.theme);
       break;
     case "requestClose":
-      // 扩展请求关闭预览，带上当前行号
       vscode.postMessage({ type: "closePreview", line: lastInteractedLine });
       break;
   }

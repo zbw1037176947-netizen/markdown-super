@@ -10,8 +10,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "bundler",
-    "sourceMap": true,
-    "noImplicitAny": false
+    "sourceMap": true
   },
   "include": ["src/webview/**/*.ts"],
   "exclude": ["node_modules", "dist"]

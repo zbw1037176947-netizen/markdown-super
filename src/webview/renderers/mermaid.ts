@@ -3,20 +3,29 @@
  * 延迟加载 mermaid 库（~2MB），仅在检测到 mermaid 代码块时才加载
  */
 
-let mermaidModule: typeof import("mermaid") | null = null;
+// 缓存 Promise 而非 module，避免并发调用时重复 import + initialize
+let mermaidPromise: Promise<typeof import("mermaid").default> | null = null;
 let mermaidId = 0;
 
-async function ensureMermaid() {
-  if (!mermaidModule) {
-    mermaidModule = await import("mermaid");
-    mermaidModule.default.initialize({
-      startOnLoad: false,
-      theme: "default",
-      securityLevel: "strict",
-      fontFamily: "inherit",
-    });
+function ensureMermaid(): Promise<typeof import("mermaid").default> {
+  if (!mermaidPromise) {
+    mermaidPromise = import("mermaid")
+      .then((m) => {
+        m.default.initialize({
+          startOnLoad: false,
+          theme: "default",
+          securityLevel: "strict",
+          fontFamily: "inherit",
+        });
+        return m.default;
+      })
+      .catch((err) => {
+        // 失败时重置，下次可以重试
+        mermaidPromise = null;
+        throw err;
+      });
   }
-  return mermaidModule.default;
+  return mermaidPromise;
 }
 
 export async function renderMermaidBlocks(container: HTMLElement) {

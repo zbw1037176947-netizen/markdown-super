@@ -109,14 +109,31 @@ export function initPreviewSearch(container: HTMLElement) {
     // 用 <mark> 高亮匹配（从后往前替换，避免索引偏移）
     for (let i = matches.length - 1; i >= 0; i--) {
       const { node, index } = matches[i];
-      const range = document.createRange();
-      range.setStart(node, index);
-      range.setEnd(node, index + query.length);
+      // 文本节点可能在上一轮高亮时已被移除，跳过
+      if (!node.parentNode) continue;
 
-      const mark = document.createElement("mark");
-      mark.className = "search-highlight";
-      range.surroundContents(mark);
-      highlights.push(mark);
+      const range = document.createRange();
+      try {
+        range.setStart(node, index);
+        range.setEnd(node, index + query.length);
+
+        const mark = document.createElement("mark");
+        mark.className = "search-highlight";
+        try {
+          // 理想路径：选择在单个文本节点内，surroundContents 直接成功
+          range.surroundContents(mark);
+        } catch {
+          // fallback：跨节点或其他情况，用 extractContents + insertNode
+          const contents = range.extractContents();
+          mark.appendChild(contents);
+          range.insertNode(mark);
+        }
+        highlights.push(mark);
+      } catch {
+        // 范围无效（如 node 已脱离 DOM）：静默跳过该匹配
+      } finally {
+        range.detach?.();
+      }
     }
 
     // 反转（因为从后往前插入的）

@@ -9,19 +9,17 @@
  */
 
 import type MarkdownIt from "markdown-it";
+import type Token from "markdown-it/lib/token.mjs";
+
+type RenderRule = NonNullable<MarkdownIt["renderer"]["rules"][string]>;
 
 export function injectSourceLines(md: MarkdownIt) {
-  // 保存原始渲染规则的引用
-  const defaultRender =
-    md.renderer.rules.paragraph_open ||
-    ((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options));
+  const defaultRender: RenderRule = (tokens, idx, options, _env, self) =>
+    self.renderToken(tokens, idx, options);
 
   // 通用处理：给所有带 map 的 opening token 注入 data-line
   const addLineAttr = (tokenName: string) => {
-    const original =
-      md.renderer.rules[tokenName] ||
-      ((tokens: any, idx: any, options: any, _env: any, self: any) =>
-        self.renderToken(tokens, idx, options));
+    const original: RenderRule = md.renderer.rules[tokenName] ?? defaultRender;
 
     md.renderer.rules[tokenName] = (tokens, idx, options, env, self) => {
       const token = tokens[idx];
@@ -32,7 +30,6 @@ export function injectSourceLines(md: MarkdownIt) {
     };
   };
 
-  // 给所有常见的块级 opening token 注入 data-line
   const blockTokens = [
     "paragraph_open",
     "heading_open",
@@ -51,21 +48,15 @@ export function injectSourceLines(md: MarkdownIt) {
     addLineAttr(tokenName);
   }
 
-  // fence（代码块）需要特殊处理，因为它的 data-line 要加到外层 <pre> 上
-  // 而 highlight 函数返回的是完整的 <pre><code>，所以在 highlight 返回的 HTML 里注入
-  const originalFence =
-    md.renderer.rules.fence ||
-    ((tokens: any, idx: any, options: any, _env: any, self: any) =>
-      self.renderToken(tokens, idx, options));
+  // fence 需要特殊处理：highlight 函数返回完整 <pre><code>，在结果 HTML 里注入 data-line
+  const originalFence: RenderRule = md.renderer.rules.fence ?? defaultRender;
 
-  md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+  md.renderer.rules.fence = (tokens: Token[], idx, options, env, self) => {
     const token = tokens[idx];
     const line = token.map ? token.map[0] : null;
 
-    // 调用 highlight 或默认渲染
     let result = originalFence(tokens, idx, options, env, self);
 
-    // 在第一个 <pre 标签上注入 data-line
     if (line !== null) {
       result = result.replace(/^<pre/, `<pre data-line="${line}"`);
     }

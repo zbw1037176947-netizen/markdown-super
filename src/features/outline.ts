@@ -78,26 +78,59 @@ export class MarkdownOutlineProvider implements vscode.TreeDataProvider<HeadingI
   private _parseHeadings(document: vscode.TextDocument): HeadingItem[] {
     const headings: HeadingItem[] = [];
     const text = document.getText();
-    const lines = text.split("\n");
+    const lines = text.split(/\r?\n/);
 
-    let inCodeBlock = false;
+    // 支持 ``` 和 ~~~ 两种围栏，且要求闭合用同类型且长度不小于开始
+    let fenceChar: "`" | "~" | null = null;
+    let fenceLen = 0;
+    let inFrontMatter = false;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
-      // 跳过代码块内容
-      if (line.trimStart().startsWith("```")) {
-        inCodeBlock = !inCodeBlock;
+      // Front matter（--- 包裹，仅文档开头）
+      if (i === 0 && line.trim() === "---") {
+        inFrontMatter = true;
         continue;
       }
-      if (inCodeBlock) continue;
+      if (inFrontMatter) {
+        if (line.trim() === "---") inFrontMatter = false;
+        continue;
+      }
+
+      // 围栏代码块：检测开始/结束
+      const fenceMatch = line.match(/^(\s*)(`{3,}|~{3,})/);
+      if (fenceMatch) {
+        const indent = fenceMatch[1].length;
+        const marker = fenceMatch[2];
+        const ch = marker[0] as "`" | "~";
+        const len = marker.length;
+
+        if (fenceChar === null) {
+          // 开始围栏（CommonMark 允许最多 3 个空格缩进）
+          if (indent <= 3) {
+            fenceChar = ch;
+            fenceLen = len;
+          }
+        } else if (ch === fenceChar && len >= fenceLen && indent <= 3) {
+          // 结束围栏
+          fenceChar = null;
+          fenceLen = 0;
+        }
+        continue;
+      }
+      if (fenceChar !== null) continue;
+
+      // 缩进代码块（4 个空格或 tab 开头，且前一行为空/也是缩进块）
+      // 简化处理：只在非空白前缀时识别标题，避免误把缩进示例中的 # 当标题
+      if (/^(\s{4,}|\t)/.test(line)) continue;
 
       // 匹配 ATX 标题（# ~ ######）
-      const match = line.match(/^(#{1,6})\s+(.+?)(?:\s+#+\s*)?$/);
+      const match = line.match(/^(\s{0,3})(#{1,6})\s+(.+?)(?:\s+#+\s*)?$/);
       if (match) {
         headings.push({
-          text: match[2].trim(),
-          level: match[1].length,
+          text: match[3].trim(),
+          level: match[2].length,
           line: i,
           children: [],
         });
