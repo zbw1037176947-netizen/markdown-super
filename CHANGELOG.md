@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.1.3] - 2026-04-13
+
+### Fixed
+
+- **位置同步重写** — 改为视口对视口对称映射（编辑器视口顶部行 ↔ 预览视口顶部），双向稳定
+- **Edit in Source 不再关闭预览** — 用 `preview: false` 避免 webview tab 被挤掉
+- **首次打开预览自动定位** — 修复 `requestScrollAfterRender` 静默失效问题
+- **GFM Alert 插件不再破坏 inline 渲染** — 不再劫持全局 inline renderer
+- **Mermaid 初始化并发竞态** — Promise 缓存替代 module 缓存
+- **搜索 surroundContents 崩溃** — try-catch + fallback
+- **image-zoom 监听器泄漏** — 具名 Esc 监听器 + closing 状态机
+- **滚动同步跨文档窜扰** — setTimeout 回调校验 activeEditor
+
+### Changed
+
+- **光标体验** — 移除块级手型光标，保留 hover 背景反馈，恢复正常 text 光标
+- **Outline 代码块解析** — 支持 ~~~、排除 front matter 和缩进代码块
+- **图片路径解析** — 缓存 base + data-resolved 标记避免重复处理
+- **消息类型安全** — webview ↔ extension 通信加入结构验证
+- **去掉失效的"点击预览跳转编辑器"功能** — 不再产生视觉干扰
+
+### Added
+
+- **PlantUML 配置化服务器** — `markdownSuper.plantuml.server`，支持自建服务器保护隐私
+- **PlantUML 官方 deflate 编码** — 支持大型图表，替代 hex 编码
+
 ## [0.1.2] - 2026-04-13
 
 ### Added
