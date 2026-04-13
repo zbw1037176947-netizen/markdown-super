@@ -201,17 +201,6 @@ async function doRender(markdown: string) {
     });
   });
 
-  // 预览点击 → 跳转编辑器
-  previewEl.querySelectorAll("[data-line]").forEach((el) => {
-    el.addEventListener("click", (e) => {
-      if ((e.target as HTMLElement).closest("a, button")) return;
-      const line = parseInt(el.getAttribute("data-line")!, 10);
-      if (!isNaN(line)) {
-        vscode.postMessage({ type: "revealLine", line });
-      }
-    });
-  });
-
   buildLineCache();
   updateFloatingToc(previewEl);
   document.documentElement.scrollTop = scrollTop;

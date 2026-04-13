@@ -223,11 +223,6 @@ export class PreviewPanel {
           vscode.env.openExternal(vscode.Uri.parse(message.href));
         }
         break;
-      case "revealLine":
-        if (typeof message.line === "number") {
-          this._revealLineInEditor(message.line as number);
-        }
-        break;
       case "closePreview":
         this._closeAndRestore(typeof message.line === "number" ? (message.line as number) : undefined);
         break;
@@ -239,20 +234,6 @@ export class PreviewPanel {
           this._panel.webview.postMessage({ type: "scrollToLine", line });
         }
         break;
-    }
-  }
-
-  private _revealLineInEditor(line: number) {
-    for (const editor of vscode.window.visibleTextEditors) {
-      if (editor.document.uri.toString() === this._currentDocUri) {
-        const pos = new vscode.Position(line, 0);
-        editor.selection = new vscode.Selection(pos, pos);
-        editor.revealRange(
-          new vscode.Range(pos, pos),
-          vscode.TextEditorRevealType.InCenter
-        );
-        break;
-      }
     }
   }
 
