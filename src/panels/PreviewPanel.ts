@@ -156,8 +156,12 @@ export class PreviewPanel {
     );
     if (!doc) return;
 
-    // 在"第一个编辑器列"打开文档（预览保持不动）
-    vscode.window.showTextDocument(doc, vscode.ViewColumn.One, false).then((editor) => {
+    // 在"第一个编辑器列"打开文档，preview:false 避免以预览模式打开替换当前 tab
+    vscode.window.showTextDocument(doc, {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+      preserveFocus: false,
+    }).then((editor) => {
       if (line !== undefined && line >= 0) {
         const pos = new vscode.Position(line, 0);
         editor.selection = new vscode.Selection(pos, pos);
