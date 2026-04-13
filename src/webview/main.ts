@@ -216,7 +216,12 @@ async function doRender(markdown: string) {
   vscode.postMessage({ type: "rendered" });
 }
 
-// ===== 滚动同步 =====
+// ===== 滚动同步（视口对视口映射）=====
+//
+// 核心原则：
+//   - 编辑器视口顶部行 N → 预览把 line=N 的位置滚到视口顶部
+//   - 预览视口顶部像素 Y → 对应源码行 M → 编辑器 revealRange(M, AtTop)
+// 双向用同一个锚点（视口顶部），对称、可预测
 
 let lineElements: { line: number; el: HTMLElement }[] = [];
 
@@ -228,48 +233,20 @@ function buildLineCache() {
       lineElements.push({ line, el: el as HTMLElement });
     }
   });
-  // 按 line 升序（DOM 顺序通常已经是升序，但图表后处理可能改变）
   lineElements.sort((a, b) => a.line - b.line);
 }
 
 /**
- * 用户滚动时：用视口中间位置反推 data-line，更新 lastInteractedLine
- * 用二分查找 + 缓存，不遍历 DOM
- * 程序滚动时不更新
+ * 给定源码行号，通过相邻 data-line 元素插值，计算预览中的 scrollY 目标位置
  */
-let scrollTrackingRaf: number | null = null;
-function updateLastInteractedFromScroll() {
-  if (isProgrammaticScroll) return;
-  if (lineElements.length === 0) return;
-
-  const viewportMid = window.scrollY + window.innerHeight / 3; // 偏上 1/3 作为锚点，更符合阅读习惯
-
-  // 二分查找：找到最接近 viewportMid 的元素
-  let lo = 0;
-  let hi = lineElements.length - 1;
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1;
-    if (lineElements[mid].el.offsetTop < viewportMid) lo = mid + 1;
-    else hi = mid;
+function lineToScrollY(line: number): number {
+  if (lineElements.length === 0) return 0;
+  if (line <= lineElements[0].line) return 0;
+  if (line >= lineElements[lineElements.length - 1].line) {
+    return lineElements[lineElements.length - 1].el.offsetTop;
   }
-  // 取 lo 和 lo-1 中更接近 viewportMid 的
-  const a = lineElements[lo];
-  const b = lo > 0 ? lineElements[lo - 1] : a;
-  const target = Math.abs(a.el.offsetTop - viewportMid) < Math.abs(b.el.offsetTop - viewportMid) ? a : b;
-  if (target) lastInteractedLine = target.line;
-}
 
-window.addEventListener("scroll", () => {
-  if (scrollTrackingRaf !== null) return; // rAF 节流
-  scrollTrackingRaf = requestAnimationFrame(() => {
-    scrollTrackingRaf = null;
-    updateLastInteractedFromScroll();
-  });
-}, { passive: true });
-
-function scrollPreviewToLine(line: number) {
-  if (lineElements.length === 0) return;
-
+  // 二分：找到 line 前后的元素
   let lo = 0;
   let hi = lineElements.length - 1;
   while (lo < hi) {
@@ -277,29 +254,67 @@ function scrollPreviewToLine(line: number) {
     if (lineElements[mid].line < line) lo = mid + 1;
     else hi = mid;
   }
-
   const after = lineElements[lo];
   const before = lo > 0 ? lineElements[lo - 1] : after;
+  if (before === after || after.line === before.line) return before.el.offsetTop;
 
-  const beforeTop = before.el.offsetTop;
-  const afterTop = after.el.offsetTop;
+  const ratio = (line - before.line) / (after.line - before.line);
+  return before.el.offsetTop + (after.el.offsetTop - before.el.offsetTop) * ratio;
+}
 
-  let targetTop: number;
-  if (before === after || before.line === after.line) {
-    targetTop = beforeTop;
-  } else {
-    const ratio = (line - before.line) / (after.line - before.line);
-    targetTop = beforeTop + (afterTop - beforeTop) * ratio;
+/**
+ * 给定预览中的 scrollY 位置（通常是视口顶部），通过插值计算对应源码行号
+ */
+function scrollYToLine(scrollY: number): number {
+  if (lineElements.length === 0) return 0;
+  if (scrollY <= lineElements[0].el.offsetTop) return lineElements[0].line;
+  if (scrollY >= lineElements[lineElements.length - 1].el.offsetTop) {
+    return lineElements[lineElements.length - 1].line;
   }
 
-  const viewportHeight = document.documentElement.clientHeight;
-  const scrollTarget = targetTop - viewportHeight / 3;
+  // 二分：找到 scrollY 前后的元素
+  let lo = 0;
+  let hi = lineElements.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (lineElements[mid].el.offsetTop < scrollY) lo = mid + 1;
+    else hi = mid;
+  }
+  const after = lineElements[lo];
+  const before = lo > 0 ? lineElements[lo - 1] : after;
+  if (before === after || after.el.offsetTop === before.el.offsetTop) return before.line;
+
+  const ratio = (scrollY - before.el.offsetTop) / (after.el.offsetTop - before.el.offsetTop);
+  return Math.round(before.line + (after.line - before.line) * ratio);
+}
+
+/**
+ * 用户滚动预览时：用视口顶部反推行号，更新 lastInteractedLine
+ * 程序滚动时不更新
+ */
+let scrollTrackingRaf: number | null = null;
+window.addEventListener("scroll", () => {
+  if (isProgrammaticScroll) return;
+  if (scrollTrackingRaf !== null) return;
+  scrollTrackingRaf = requestAnimationFrame(() => {
+    scrollTrackingRaf = null;
+    if (isProgrammaticScroll) return;
+    if (lineElements.length === 0) return;
+    const line = scrollYToLine(window.scrollY);
+    if (line >= 0) lastInteractedLine = line;
+  });
+}, { passive: true });
+
+/**
+ * 接收编辑器发来的滚动请求，把 line 位置滚到视口顶部
+ */
+function scrollPreviewToLine(line: number) {
+  if (lineElements.length === 0) return;
+  const targetY = lineToScrollY(line);
 
   isProgrammaticScroll = true;
-  window.scrollTo({ top: Math.max(0, scrollTarget), behavior: "instant" as ScrollBehavior });
-  // 程序滚动触发的 scroll 事件要等下一个事件循环后才触发，延迟解除标记避免被 scroll 监听误更新
-  setTimeout(() => { isProgrammaticScroll = false; }, 100);
-  // 同步更新 lastInteractedLine 为目标行（因为我们主动滚到了这里）
+  window.scrollTo({ top: Math.max(0, targetY), behavior: "instant" as ScrollBehavior });
+  setTimeout(() => { isProgrammaticScroll = false; }, 150);
   lastInteractedLine = line;
 }
 

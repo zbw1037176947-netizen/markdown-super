@@ -41,10 +41,9 @@ export function activate(context: vscode.ExtensionContext) {
       const config = vscode.workspace.getConfiguration("markdownSuper");
       const mode = config.get<string>("previewMode", "side");
 
-      const cursorLine = editor.selection.active.line;
-
-      // 先设置挂起的滚动位置，createOrShow 后 webview 渲染完会自动执行
-      PreviewPanel.requestScrollAfterRender(cursorLine);
+      // 用"视口顶部行"作为初始定位锚点（不是光标行），保持与滚动同步一致
+      const topLine = editor.visibleRanges[0]?.start.line ?? editor.selection.active.line;
+      PreviewPanel.requestScrollAfterRender(topLine);
 
       if (mode === "inplace") {
         PreviewPanel.createOrShow(context, editor.document, vscode.ViewColumn.Active, "inplace");
@@ -86,46 +85,24 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // 监听编辑器滚动/光标变化 → 同步预览
-  // 使用单一锚点行逻辑 + 节流，避免两个事件竞争
+  // 监听编辑器滚动 → 同步预览
+  // 锚点统一用"视口顶部行"，保证与预览侧的追踪逻辑对称
   let syncTimer: ReturnType<typeof setTimeout> | null = null;
-  const requestSync = (editor: vscode.TextEditor) => {
+  const syncPreview = (editor: vscode.TextEditor) => {
     if (syncTimer) clearTimeout(syncTimer);
     syncTimer = setTimeout(() => {
       if (editor.document.languageId !== "markdown") return;
-
-      // 策略：优先用光标行（如果光标在可见区域内）；否则用可见区域的顶部第 1/3 位置
-      const cursorLine = editor.selection.active.line;
       const ranges = editor.visibleRanges;
       if (ranges.length === 0) return;
-
       const topLine = ranges[0].start.line;
-      const botLine = ranges[0].end.line;
-
-      // 光标可见 → 用光标；否则用视口上 1/3 的行
-      let syncLine: number;
-      if (cursorLine >= topLine && cursorLine <= botLine) {
-        syncLine = cursorLine;
-      } else {
-        syncLine = topLine + Math.floor((botLine - topLine) / 3);
-      }
-
-      PreviewPanel.scrollToLine(syncLine);
+      PreviewPanel.scrollToLine(topLine);
     }, 30);
   };
 
   context.subscriptions.push(
     vscode.window.onDidChangeTextEditorVisibleRanges((e) => {
       if (e.textEditor.document.languageId === "markdown") {
-        requestSync(e.textEditor);
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.window.onDidChangeTextEditorSelection((e) => {
-      if (e.textEditor.document.languageId === "markdown") {
-        requestSync(e.textEditor);
+        syncPreview(e.textEditor);
       }
     })
   );

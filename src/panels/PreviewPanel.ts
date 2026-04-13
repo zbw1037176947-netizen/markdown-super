@@ -162,7 +162,8 @@ export class PreviewPanel {
           if (line !== undefined && line >= 0) {
             const pos = new vscode.Position(line, 0);
             editor.selection = new vscode.Selection(pos, pos);
-            editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
+            // AtTop 把目标行放到视口顶部，与预览的视口对齐策略一致
+            editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.AtTop);
           }
         });
       }
