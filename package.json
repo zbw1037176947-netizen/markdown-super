@@ -52,8 +52,8 @@
         "icon": "$(open-preview)"
       },
       {
-        "command": "markdownSuper.toggleTheme",
-        "title": "Toggle Preview Theme",
+        "command": "markdownSuper.pickTheme",
+        "title": "Select Preview Theme...",
         "category": "Markdown Super",
         "icon": "$(color-mode)"
       },
@@ -145,7 +145,7 @@
           "group": "navigation"
         },
         {
-          "command": "markdownSuper.toggleTheme",
+          "command": "markdownSuper.pickTheme",
           "when": "markdownSuperPreviewActive",
           "group": "navigation"
         }

@@ -1,23 +1,29 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-const THEMES = [
-  "github",
-  "apple",
-  "notion",
-  "medium",
-  "vue",
-  "chinese-doc",
-  "warm-paper",
-  "solarized-light",
-  "minimalist",
-  "tokyo-night",
-  "nord",
-  "vercel",
-  "purple-night",
-  "auto",
-] as const;
-type PreviewTheme = (typeof THEMES)[number];
+interface ThemeMeta {
+  id: string;
+  label: string;
+  description: string;
+}
+
+const THEMES: readonly ThemeMeta[] = [
+  { id: "github",          label: "GitHub",          description: "经典技术文档 · 浅色" },
+  { id: "apple",           label: "Apple",           description: "SF Pro + 苹果质感 · 浅色" },
+  { id: "notion",          label: "Notion",          description: "现代知识库 · 衬线正文" },
+  { id: "medium",          label: "Medium",          description: "沉浸阅读 · 窄列大字号" },
+  { id: "vue",             label: "Vue",             description: "绿色技术文档风" },
+  { id: "chinese-doc",     label: "Chinese Doc",     description: "中文排版优化 · 语雀风" },
+  { id: "warm-paper",      label: "Warm Paper",      description: "羊皮纸质感 · New York 衬线" },
+  { id: "solarized-light", label: "Solarized Light", description: "暖米色护眼 · 经典配色" },
+  { id: "minimalist",      label: "Minimalist",      description: "极简等宽 · iA Writer 风" },
+  { id: "tokyo-night",     label: "Tokyo Night",     description: "程序员深色标杆 · 紫蓝粉" },
+  { id: "nord",            label: "Nord",            description: "北欧冷静蓝调 · 深色" },
+  { id: "vercel",          label: "Vercel",          description: "纯黑锐利 · Geist 字体" },
+  { id: "purple-night",    label: "Purple Night",    description: "暗色 + 紫色渐变" },
+  { id: "auto",            label: "Auto",            description: "跟随 VS Code 主题" },
+];
+
 type PreviewMode = "side" | "inplace";
 
 export class PreviewPanel {
@@ -126,17 +132,31 @@ export class PreviewPanel {
     }
   }
 
-  public static toggleTheme() {
-    if (PreviewPanel.currentPanel) {
-      const p = PreviewPanel.currentPanel;
-      p._themeIndex = (p._themeIndex + 1) % THEMES.length;
-      const theme = THEMES[p._themeIndex];
-      p._panel.webview.postMessage({
-        type: "setTheme",
-        theme,
-      });
-      vscode.window.showInformationMessage(`Markdown Super: Theme → ${theme}`);
-    }
+  /**
+   * 弹出 QuickPick 选择主题
+   */
+  public static async pickTheme() {
+    const p = PreviewPanel.currentPanel;
+    if (!p) return;
+
+    const currentId = THEMES[p._themeIndex]?.id;
+    const items: (vscode.QuickPickItem & { id: string })[] = THEMES.map((t) => ({
+      id: t.id,
+      label: t.id === currentId ? `$(check) ${t.label}` : `      ${t.label}`,
+      description: t.description,
+    }));
+
+    const picked = await vscode.window.showQuickPick(items, {
+      placeHolder: "选择预览主题",
+      matchOnDescription: true,
+    });
+    if (!picked) return;
+
+    const idx = THEMES.findIndex((t) => t.id === picked.id);
+    if (idx === -1) return;
+
+    p._themeIndex = idx;
+    p._panel.webview.postMessage({ type: "setTheme", theme: picked.id });
   }
 
   private constructor(
@@ -216,7 +236,7 @@ export class PreviewPanel {
       config: {
         mermaidEnabled: config.get<boolean>("mermaid.enabled", true),
         katexEnabled: config.get<boolean>("katex.enabled", true),
-        theme: THEMES[this._themeIndex],
+        theme: THEMES[this._themeIndex]?.id ?? "github",
         fontSize: config.get<number>("fontSize", 16),
         lineNumbers: config.get<boolean>("codeBlock.lineNumbers", false),
         plantumlServer: config.get<string>("plantuml.server", ""),

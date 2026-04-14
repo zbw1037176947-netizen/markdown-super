@@ -59,10 +59,10 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // 命令：切换预览主题
+  // 命令：选择预览主题（QuickPick 下拉）
   context.subscriptions.push(
-    vscode.commands.registerCommand("markdownSuper.toggleTheme", () => {
-      PreviewPanel.toggleTheme();
+    vscode.commands.registerCommand("markdownSuper.pickTheme", () => {
+      PreviewPanel.pickTheme();
     })
   );
 
