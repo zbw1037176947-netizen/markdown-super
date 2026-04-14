@@ -2,7 +2,7 @@
   "name": "markdown-super",
   "displayName": "Markdown Super",
   "description": "All-in-one Markdown preview & editing experience for VS Code — Mermaid, LaTeX, PlantUML, Markmap, and more.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "zanbowen",
   "license": "MIT",
   "icon": "media/icon.png",

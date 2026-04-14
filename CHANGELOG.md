@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.4] - 2026-04-13
+
+### Added
+
+- **6 套新主题** — Apple（SF Pro 字体）、Vercel（Geist 纯黑）、Tokyo Night（程序员深色标杆）、Nord（北欧冷蓝）、Solarized Light（暖米色经典）、Warm Paper（羊皮纸质感）
+- **QuickPick 主题选择** — 点击标题栏 🎨 按钮弹出下拉列表，支持搜索和当前主题 ✓ 标识
+- 总主题数从 8 增至 14
+
+### Changed
+
+- 切换主题交互从循环改为下拉选择，选主题更直观
+
 ## [0.1.3] - 2026-04-13
 
 ### Fixed
