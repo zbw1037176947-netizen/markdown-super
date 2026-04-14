@@ -315,14 +315,20 @@ function scrollPreviewToLine(line: number) {
 
 // 主题列表，定义各主题的样式变体属性
 const THEME_STYLES: Record<string, { headingStyle: string; hrStyle: string; codeHeader: string }> = {
-  auto:           { headingStyle: "border",      hrStyle: "fade",  codeHeader: "flat" },
-  github:         { headingStyle: "border",      hrStyle: "fade",  codeHeader: "flat" },
-  notion:         { headingStyle: "plain",       hrStyle: "plain", codeHeader: "flat" },
-  medium:         { headingStyle: "plain",       hrStyle: "stars", codeHeader: "flat" },
-  vue:            { headingStyle: "accent-left", hrStyle: "fade",  codeHeader: "flat" },
-  "purple-night": { headingStyle: "gradient",    hrStyle: "dots",  codeHeader: "macos" },
-  minimalist:     { headingStyle: "plain",       hrStyle: "plain", codeHeader: "flat" },
-  "chinese-doc":  { headingStyle: "accent-left", hrStyle: "fade",  codeHeader: "flat" },
+  auto:              { headingStyle: "border",      hrStyle: "fade",  codeHeader: "flat" },
+  github:            { headingStyle: "border",      hrStyle: "fade",  codeHeader: "flat" },
+  apple:             { headingStyle: "plain",       hrStyle: "fade",  codeHeader: "flat" },
+  notion:            { headingStyle: "plain",       hrStyle: "plain", codeHeader: "flat" },
+  medium:            { headingStyle: "plain",       hrStyle: "stars", codeHeader: "flat" },
+  vue:               { headingStyle: "accent-left", hrStyle: "fade",  codeHeader: "flat" },
+  "chinese-doc":     { headingStyle: "accent-left", hrStyle: "fade",  codeHeader: "flat" },
+  "warm-paper":      { headingStyle: "plain",       hrStyle: "stars", codeHeader: "flat" },
+  "solarized-light": { headingStyle: "plain",       hrStyle: "dots",  codeHeader: "flat" },
+  minimalist:        { headingStyle: "plain",       hrStyle: "plain", codeHeader: "flat" },
+  "tokyo-night":     { headingStyle: "accent-left", hrStyle: "fade",  codeHeader: "macos" },
+  nord:              { headingStyle: "border",      hrStyle: "fade",  codeHeader: "flat" },
+  vercel:            { headingStyle: "plain",       hrStyle: "fade",  codeHeader: "flat" },
+  "purple-night":    { headingStyle: "gradient",    hrStyle: "dots",  codeHeader: "macos" },
 };
 
 function applyTheme(theme: string) {

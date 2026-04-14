@@ -1,7 +1,22 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-const THEMES = ["github", "notion", "medium", "vue", "purple-night", "minimalist", "chinese-doc", "auto"] as const;
+const THEMES = [
+  "github",
+  "apple",
+  "notion",
+  "medium",
+  "vue",
+  "chinese-doc",
+  "warm-paper",
+  "solarized-light",
+  "minimalist",
+  "tokyo-night",
+  "nord",
+  "vercel",
+  "purple-night",
+  "auto",
+] as const;
 type PreviewTheme = (typeof THEMES)[number];
 type PreviewMode = "side" | "inplace";
 

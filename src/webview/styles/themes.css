@@ -261,6 +261,228 @@ body[data-theme="chinese-doc"] {
   --ms-hljs-variable: #953800;
 }
 
+/* ===== 8. Apple HIG（苹果官方风，温暖高级）===== */
+body[data-theme="apple"] {
+  --ms-bg: #fbfbfd;
+  --ms-text: #1d1d1f;
+  --ms-text-secondary: #6e6e73;
+  --ms-border: #d2d2d7;
+  --ms-accent: #0071e3;
+  --ms-accent-subtle: #e8f1fc;
+  --ms-code-bg: #f5f5f7;
+  --ms-code-text: #bf4080;
+  --ms-blockquote-border: #0071e3;
+  --ms-blockquote-bg: #f5f5f7;
+  --ms-blockquote-text: #424245;
+  --ms-table-header-bg: #f5f5f7;
+  --ms-table-stripe-bg: #fafafa;
+  --ms-table-hover-bg: #e8f1fc;
+  --ms-heading-border: #d2d2d7;
+  --ms-link-hover: #0077ed;
+  --ms-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --ms-font-body: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --ms-font-heading: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --ms-font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --ms-font-size: 17px;
+  --ms-line-height: 1.6;
+  --ms-content-width: 860px;
+  --ms-heading-style: plain;
+  --ms-hr-style: fade;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #d12f1b;
+  --ms-hljs-string: #2c7a2c;
+  --ms-hljs-title: #5e2ca5;
+  --ms-hljs-comment: #86868b;
+  --ms-hljs-number: #1c60a8;
+  --ms-hljs-variable: #ad3da4;
+}
+
+/* ===== 9. Vercel Black（锐利黑白科技）===== */
+body[data-theme="vercel"] {
+  --ms-bg: #000000;
+  --ms-text: #fafafa;
+  --ms-text-secondary: #a1a1aa;
+  --ms-border: #27272a;
+  --ms-accent: #f5f5f5;
+  --ms-accent-subtle: #1a1a1a;
+  --ms-code-bg: #0a0a0a;
+  --ms-code-text: #f471b5;
+  --ms-blockquote-border: #52525b;
+  --ms-blockquote-bg: #0a0a0a;
+  --ms-blockquote-text: #d4d4d8;
+  --ms-table-header-bg: #0a0a0a;
+  --ms-table-stripe-bg: rgba(255, 255, 255, 0.02);
+  --ms-table-hover-bg: rgba(255, 255, 255, 0.05);
+  --ms-heading-border: #27272a;
+  --ms-link-hover: #ffffff;
+  --ms-shadow: 0 4px 24px rgba(0, 0, 0, 0.8);
+  --ms-font-body: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ms-font-heading: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ms-font-mono: "Geist Mono", "JetBrains Mono", "SF Mono", Menlo, monospace;
+  --ms-font-size: 16px;
+  --ms-line-height: 1.65;
+  --ms-content-width: 880px;
+  --ms-heading-style: plain;
+  --ms-hr-style: fade;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #f471b5;
+  --ms-hljs-string: #7dd3fc;
+  --ms-hljs-title: #facc15;
+  --ms-hljs-comment: #52525b;
+  --ms-hljs-number: #a78bfa;
+  --ms-hljs-variable: #fb923c;
+}
+
+/* ===== 10. Tokyo Night（程序员深色标杆）===== */
+body[data-theme="tokyo-night"] {
+  --ms-bg: #1a1b26;
+  --ms-text: #c0caf5;
+  --ms-text-secondary: #787c99;
+  --ms-border: #292e42;
+  --ms-accent: #7aa2f7;
+  --ms-accent-subtle: #1f2335;
+  --ms-code-bg: #16161e;
+  --ms-code-text: #f7768e;
+  --ms-blockquote-border: #7aa2f7;
+  --ms-blockquote-bg: rgba(122, 162, 247, 0.06);
+  --ms-blockquote-text: #a9b1d6;
+  --ms-table-header-bg: #16161e;
+  --ms-table-stripe-bg: rgba(255, 255, 255, 0.02);
+  --ms-table-hover-bg: rgba(122, 162, 247, 0.08);
+  --ms-heading-border: #292e42;
+  --ms-link-hover: #bb9af7;
+  --ms-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  --ms-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --ms-font-heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --ms-font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Menlo, monospace;
+  --ms-font-size: 16px;
+  --ms-line-height: 1.7;
+  --ms-content-width: 900px;
+  --ms-heading-style: accent-left;
+  --ms-hr-style: fade;
+  --ms-code-header-style: macos;
+
+  --ms-hljs-keyword: #bb9af7;
+  --ms-hljs-string: #9ece6a;
+  --ms-hljs-title: #7aa2f7;
+  --ms-hljs-comment: #565f89;
+  --ms-hljs-number: #ff9e64;
+  --ms-hljs-variable: #f7768e;
+}
+
+/* ===== 11. Nord（北欧冷静蓝调）===== */
+body[data-theme="nord"] {
+  --ms-bg: #2e3440;
+  --ms-text: #eceff4;
+  --ms-text-secondary: #d8dee9;
+  --ms-border: #434c5e;
+  --ms-accent: #88c0d0;
+  --ms-accent-subtle: #3b4252;
+  --ms-code-bg: #292e39;
+  --ms-code-text: #d08770;
+  --ms-blockquote-border: #88c0d0;
+  --ms-blockquote-bg: rgba(136, 192, 208, 0.06);
+  --ms-blockquote-text: #d8dee9;
+  --ms-table-header-bg: #3b4252;
+  --ms-table-stripe-bg: rgba(255, 255, 255, 0.02);
+  --ms-table-hover-bg: rgba(136, 192, 208, 0.08);
+  --ms-heading-border: #434c5e;
+  --ms-link-hover: #81a1c1;
+  --ms-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --ms-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ms-font-heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ms-font-mono: "JetBrains Mono", "Fira Code", Menlo, monospace;
+  --ms-font-size: 16px;
+  --ms-line-height: 1.7;
+  --ms-content-width: 900px;
+  --ms-heading-style: border;
+  --ms-hr-style: fade;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #81a1c1;
+  --ms-hljs-string: #a3be8c;
+  --ms-hljs-title: #88c0d0;
+  --ms-hljs-comment: #616e88;
+  --ms-hljs-number: #b48ead;
+  --ms-hljs-variable: #d08770;
+}
+
+/* ===== 12. Solarized Light（经典暖米色护眼）===== */
+body[data-theme="solarized-light"] {
+  --ms-bg: #fdf6e3;
+  --ms-text: #586e75;
+  --ms-text-secondary: #93a1a1;
+  --ms-border: #eee8d5;
+  --ms-accent: #268bd2;
+  --ms-accent-subtle: #eee8d5;
+  --ms-code-bg: #eee8d5;
+  --ms-code-text: #d33682;
+  --ms-blockquote-border: #93a1a1;
+  --ms-blockquote-bg: rgba(147, 161, 161, 0.06);
+  --ms-blockquote-text: #657b83;
+  --ms-table-header-bg: #eee8d5;
+  --ms-table-stripe-bg: rgba(7, 54, 66, 0.03);
+  --ms-table-hover-bg: #e6dfc7;
+  --ms-heading-border: #eee8d5;
+  --ms-link-hover: #2aa198;
+  --ms-shadow: 0 2px 10px rgba(88, 110, 117, 0.08);
+  --ms-font-body: "Source Serif Pro", "Charter", "Iowan Old Style", Georgia, serif;
+  --ms-font-heading: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --ms-font-mono: "JetBrains Mono", Menlo, Consolas, monospace;
+  --ms-font-size: 17px;
+  --ms-line-height: 1.75;
+  --ms-content-width: 780px;
+  --ms-heading-style: plain;
+  --ms-hr-style: dots;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #cb4b16;
+  --ms-hljs-string: #859900;
+  --ms-hljs-title: #268bd2;
+  --ms-hljs-comment: #93a1a1;
+  --ms-hljs-number: #d33682;
+  --ms-hljs-variable: #b58900;
+}
+
+/* ===== 13. Warm Paper（羊皮纸温暖质感）===== */
+body[data-theme="warm-paper"] {
+  --ms-bg: #f5efe6;
+  --ms-text: #3a2e26;
+  --ms-text-secondary: #8c7866;
+  --ms-border: #d9ccb8;
+  --ms-accent: #a0522d;
+  --ms-accent-subtle: #ede4d3;
+  --ms-code-bg: #ede4d3;
+  --ms-code-text: #b85450;
+  --ms-blockquote-border: #a0522d;
+  --ms-blockquote-bg: #ede4d3;
+  --ms-blockquote-text: #5c4a3a;
+  --ms-table-header-bg: #ede4d3;
+  --ms-table-stripe-bg: #f0e8d8;
+  --ms-table-hover-bg: #e5d9c0;
+  --ms-heading-border: #c9b99a;
+  --ms-link-hover: #8b3a1e;
+  --ms-shadow: 0 4px 18px rgba(124, 94, 66, 0.12);
+  --ms-font-body: "New York", "Iowan Old Style", "Charter", Georgia, serif;
+  --ms-font-heading: "New York", "Iowan Old Style", Georgia, serif;
+  --ms-font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --ms-font-size: 18px;
+  --ms-line-height: 1.8;
+  --ms-content-width: 720px;
+  --ms-heading-style: plain;
+  --ms-hr-style: stars;
+  --ms-code-header-style: flat;
+
+  --ms-hljs-keyword: #b85450;
+  --ms-hljs-string: #5c7a3a;
+  --ms-hljs-title: #805a30;
+  --ms-hljs-comment: #a0957e;
+  --ms-hljs-number: #8b5a2b;
+  --ms-hljs-variable: #a0522d;
+}
+
 /* ===== "跟随 VS Code" 主题（使用 VS Code CSS 变量） ===== */
 body[data-theme="auto"] {
   --ms-bg: var(--vscode-editor-background);
