@@ -1,7 +1,14 @@
 .vscode/**
+.github/**
+.spec-workflow/**
 src/**
+docs/**
 node_modules/**
 tsconfig*.json
 esbuild.mjs
+publish.sh
 .gitignore
 **/*.map
+**/*.vsix
+test-preview.md
+package-lock.json
