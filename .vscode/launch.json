@@ -6,7 +6,9 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}"
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "${workspaceFolder}",
+        "${workspaceFolder}/test-preview.md"
       ],
       "outFiles": [
         "${workspaceFolder}/dist/**/*.js"
