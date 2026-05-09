@@ -336,7 +336,11 @@ Webview --> User : 显示预览
 
 ### 网络图片
 
-![VS Code Logo](https://code.visualstudio.com/assets/images/code-stable.png)
+![VS Code Logo](https://raw.githubusercontent.com/microsoft/vscode/main/resources/linux/code.png)
+
+### 大图（用于测试缩放/拖动）
+
+![Large placeholder](https://placehold.co/1600x900/png)
 
 ### 本地图片（粘贴测试）
 

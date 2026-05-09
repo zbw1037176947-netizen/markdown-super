@@ -417,10 +417,21 @@ body[data-hr-style="stars"] #preview hr::after {
   cursor: zoom-out;
   opacity: 0;
   transition: opacity 0.2s;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .image-zoom-overlay.active {
   opacity: 1;
+}
+
+.image-zoom-overlay.zoomed {
+  cursor: grab;
+}
+
+.image-zoom-overlay.zoomed:active {
+  cursor: grabbing;
 }
 
 .image-zoom-img {
@@ -429,7 +440,49 @@ body[data-hr-style="stars"] #preview hr::after {
   object-fit: contain;
   border-radius: 6px;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
-  cursor: zoom-out;
+  cursor: zoom-in;
+  will-change: transform;
+  transform-origin: center center;
+  -webkit-user-drag: none;
+}
+
+.image-zoom-overlay.zoomed .image-zoom-img {
+  cursor: inherit;
+}
+
+.image-zoom-toolbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.image-zoom-scale {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 3.5em;
+  text-align: center;
+  color: #fff;
+}
+
+.image-zoom-hint {
+  opacity: 0.7;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  padding-left: 12px;
 }
 
 /* ===== Mermaid ===== */
