@@ -446,7 +446,37 @@ body[data-hr-style="stars"] #preview hr::after {
   -webkit-user-drag: none;
 }
 
-.image-zoom-overlay.zoomed .image-zoom-img {
+/* 图表（mermaid / plantuml / markmap）放大时的容器 */
+.image-zoom-svg-wrap {
+  max-width: 90vw;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  cursor: zoom-in;
+  will-change: transform;
+  transform-origin: center center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.image-zoom-svg-wrap > svg,
+.image-zoom-svg-wrap > img {
+  max-width: calc(90vw - 32px);
+  max-height: calc(90vh - 32px);
+  display: block;
+  -webkit-user-drag: none;
+}
+.image-zoom-svg-wrap > .mm-tree {
+  max-width: calc(90vw - 32px);
+  max-height: calc(90vh - 32px);
+  overflow: auto;
+}
+
+.image-zoom-overlay.zoomed .image-zoom-img,
+.image-zoom-overlay.zoomed .image-zoom-svg-wrap {
   cursor: inherit;
 }
 
@@ -483,6 +513,49 @@ body[data-hr-style="stars"] #preview hr::after {
   opacity: 0.7;
   border-left: 1px solid rgba(255, 255, 255, 0.18);
   padding-left: 12px;
+}
+
+/* ===== 图表角标放大按钮 ===== */
+.mermaid-rendered,
+.plantuml-rendered,
+.markmap-rendered {
+  position: relative;
+}
+
+.diagram-zoom-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--ms-border);
+  border-radius: 6px;
+  background: var(--ms-bg);
+  color: var(--ms-text-secondary, var(--ms-text));
+  cursor: zoom-in;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.mermaid-rendered:hover > .diagram-zoom-btn,
+.plantuml-rendered:hover > .diagram-zoom-btn,
+.markmap-rendered:hover > .diagram-zoom-btn,
+.diagram-zoom-btn:focus-visible {
+  opacity: 1;
+}
+.diagram-zoom-btn:hover {
+  background: var(--ms-accent);
+  color: #fff;
+  border-color: transparent;
+}
+.diagram-zoom-btn > svg {
+  display: block;
+  pointer-events: none;
 }
 
 /* ===== Mermaid ===== */

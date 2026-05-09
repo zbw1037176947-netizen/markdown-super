@@ -18,7 +18,7 @@ import { gfmAlertPlugin } from "./plugins/gfm-alert";
 import { enhanceCodeBlocks } from "./renderers/code-block";
 import { initPreviewSearch } from "./features/search";
 import { initFloatingToc, updateFloatingToc } from "./features/floating-toc";
-import { initImageZoom } from "./features/image-zoom";
+import { initImageZoom, addDiagramZoomButtons } from "./features/image-zoom";
 import "./styles/preview.css";
 
 const vscode = acquireVsCodeApi();
@@ -170,6 +170,9 @@ async function doRender(markdown: string) {
   renderTasks.push(renderMarkmapBlocks(previewEl));
 
   await Promise.all(renderTasks);
+
+  // 给已渲染图表追加放大角标
+  addDiagramZoomButtons(previewEl);
 
   // KaTeX
   if (currentConfig.katexEnabled) {

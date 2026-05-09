@@ -1,29 +1,31 @@
 /**
- * 图片点击放大（Lightbox）+ 滚轮缩放 + 拖动平移
+ * 图片 / 图表点击放大（Lightbox）+ 滚轮缩放 + 拖动平移
  *
- * - 点击图片：打开全屏遮罩
+ * - 普通 <img>：点击图片打开
+ * - Mermaid / PlantUML / Markmap：图表右上角的角标按钮触发，克隆 SVG/HTML 进 overlay
+ *   （SVG 矢量保留，放大不模糊）
  * - 滚轮：以鼠标位置为锚点缩放（0.2x ~ 10x）
- * - 按住拖动：平移图片
- * - 双击：在 1x ↔ 2x 之间切换（以双击点为锚点放大）
- * - Esc / 点击空白处：关闭
+ * - 按住拖动：平移
+ * - 双击：在 1x ↔ 2x 之间切换
+ * - Esc / 点击空白：关闭
  * - + / - / 0：键盘缩放与重置
  */
 
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 10;
-const DRAG_THRESHOLD = 4; // 像素，超过才视为拖动
+const DRAG_THRESHOLD = 4;
+const DIAGRAM_SELECTOR = ".mermaid-rendered, .plantuml-rendered, .markmap-rendered";
 
 let overlay: HTMLElement | null = null;
-let zoomedImg: HTMLImageElement | null = null;
+let zoomedTarget: HTMLElement | null = null; // 被施加 transform 的元素
 let scaleEl: HTMLElement | null = null;
+let baseSize: { w: number; h: number } | null = null;
 let closing = false;
 
-// 当前变换状态
 let scale = 1;
 let tx = 0;
 let ty = 0;
 
-// 拖动状态
 let isPointerDown = false;
 let isDragging = false;
 let dragStartX = 0;
@@ -34,17 +36,50 @@ let tyAtDragStart = 0;
 export function initImageZoom(container: HTMLElement) {
   container.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
+
+    // 角标放大按钮
+    const btn = target.closest(".diagram-zoom-btn") as HTMLElement | null;
+    if (btn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const diagram = btn.closest(DIAGRAM_SELECTOR) as HTMLElement | null;
+      if (diagram) showDiagramZoom(diagram);
+      return;
+    }
+
+    // 普通图片：保持原行为；图表内 img / 提示框图标不响应
     if (
       target.tagName === "IMG" &&
-      !target.closest(".mermaid-rendered, .plantuml-rendered, .gfm-alert-title")
+      !target.closest(".mermaid-rendered, .plantuml-rendered, .markmap-rendered, .gfm-alert-title")
     ) {
       const anchor = target.closest("a");
       if (anchor) {
         e.preventDefault();
         e.stopPropagation();
       }
-      showZoom(target as HTMLImageElement);
+      showImageZoom(target as HTMLImageElement);
     }
+  });
+}
+
+/**
+ * 在已渲染的图表块右上角注入"放大"按钮。幂等：可重复调用。
+ * 应在每次 markdown 渲染完成、图表也渲染完成后调用一次。
+ */
+export function addDiagramZoomButtons(container: HTMLElement) {
+  const blocks = container.querySelectorAll<HTMLElement>(DIAGRAM_SELECTOR);
+  blocks.forEach((block) => {
+    if (block.querySelector(":scope > .diagram-zoom-btn")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "diagram-zoom-btn";
+    btn.title = "放大查看";
+    btn.setAttribute("aria-label", "放大查看");
+    btn.innerHTML =
+      '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">' +
+      '<path fill="currentColor" d="M2 2h5v1.5H4.56l3.22 3.22-1.06 1.06L3.5 4.56V7H2V2zm12 12H9v-1.5h2.44L8.22 9.28l1.06-1.06 3.22 3.22V9H14v5z"/>' +
+      "</svg>";
+    block.appendChild(btn);
   });
 }
 
@@ -64,21 +99,99 @@ function onKey(e: KeyboardEvent) {
   }
 }
 
-function showZoom(img: HTMLImageElement) {
+function showImageZoom(img: HTMLImageElement) {
   if (overlay || closing) return;
+  buildOverlay();
 
+  const cloned = document.createElement("img");
+  cloned.src = img.src;
+  cloned.className = "image-zoom-img";
+  cloned.alt = img.alt;
+  cloned.draggable = false;
+  cloned.addEventListener(
+    "load",
+    () => {
+      baseSize = computeImageBaseSize(cloned);
+      applyTransform(false);
+    },
+    { once: true }
+  );
+
+  zoomedTarget = cloned;
+  overlay!.insertBefore(cloned, overlay!.firstChild);
+  finalizeOverlay();
+}
+
+function showDiagramZoom(diagramRoot: HTMLElement) {
+  if (overlay || closing) return;
+  buildOverlay();
+
+  const wrap = document.createElement("div");
+  wrap.className = "image-zoom-svg-wrap";
+  for (const child of Array.from(diagramRoot.children)) {
+    if (child.classList.contains("diagram-zoom-btn")) continue;
+    const clone = child.cloneNode(true) as Element;
+    wrap.appendChild(clone);
+    if (clone instanceof SVGSVGElement) {
+      sizeClonedSvg(clone);
+    }
+  }
+  // 给克隆 SVG 一个独立 ID 作用域，避免和原 DOM 中的 marker / clipPath 冲突
+  rewriteSvgIds(wrap);
+
+  zoomedTarget = wrap;
+  overlay!.insertBefore(wrap, overlay!.firstChild);
+
+  // SVG / HTML 子树同步入 DOM 即可量尺寸；img 子节点等加载完再补一次
+  measureDiagramBaseSize(wrap);
+  finalizeOverlay();
+}
+
+/**
+ * Mermaid 生成的 SVG 通常带 `width="100%"` 和内联 `max-width`，进入 flex 容器后会塌陷成 0。
+ * 这里读 viewBox（或 width/height 属性）拿到原生宽高比，按 90vw / 90vh 上限算出一个具体像素尺寸。
+ */
+function sizeClonedSvg(svg: SVGSVGElement) {
+  let aspectW = 0;
+  let aspectH = 0;
+
+  const vb = svg.getAttribute("viewBox");
+  if (vb) {
+    const parts = vb.split(/[\s,]+/).map(Number);
+    if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
+      aspectW = parts[2];
+      aspectH = parts[3];
+    }
+  }
+  if (!aspectW || !aspectH) {
+    const w = parseFloat(svg.getAttribute("width") || "");
+    const h = parseFloat(svg.getAttribute("height") || "");
+    if (w > 0 && h > 0) {
+      aspectW = w;
+      aspectH = h;
+    }
+  }
+  if (!aspectW || !aspectH) return;
+
+  const maxW = window.innerWidth * 0.9 - 32;
+  const maxH = window.innerHeight * 0.9 - 32;
+  const ratio = Math.min(maxW / aspectW, maxH / aspectH);
+  const targetW = Math.round(aspectW * ratio);
+  const targetH = Math.round(aspectH * ratio);
+
+  svg.setAttribute("width", String(targetW));
+  svg.setAttribute("height", String(targetH));
+  // 清掉 mermaid 内联的 max-width，避免再次截断
+  svg.style.maxWidth = "none";
+  svg.style.maxHeight = "none";
+  svg.style.width = `${targetW}px`;
+  svg.style.height = `${targetH}px`;
+}
+
+function buildOverlay() {
   overlay = document.createElement("div");
   overlay.className = "image-zoom-overlay";
 
-  zoomedImg = document.createElement("img");
-  zoomedImg.src = img.src;
-  zoomedImg.className = "image-zoom-img";
-  zoomedImg.alt = img.alt;
-  zoomedImg.draggable = false;
-  // 图片加载完成后再 apply 一次，确保 clampPan 拿到真实 naturalSize
-  zoomedImg.addEventListener("load", () => applyTransform(false), { once: true });
-
-  // 工具栏（缩放比例 + 操作提示）
   const toolbar = document.createElement("div");
   toolbar.className = "image-zoom-toolbar";
   scaleEl = document.createElement("span");
@@ -87,20 +200,16 @@ function showZoom(img: HTMLImageElement) {
   const hint = document.createElement("span");
   hint.className = "image-zoom-hint";
   hint.textContent = "滚轮缩放 · 拖动平移 · 双击切换 · Esc 关闭";
-  toolbar.appendChild(scaleEl);
-  toolbar.appendChild(hint);
-
-  overlay.appendChild(zoomedImg);
+  toolbar.append(scaleEl, hint);
   overlay.appendChild(toolbar);
+
   document.body.appendChild(overlay);
 
-  // 重置变换
   scale = 1;
   tx = 0;
   ty = 0;
-  applyTransform(false);
+  baseSize = null;
 
-  // 绑定事件
   overlay.addEventListener("wheel", onWheel, { passive: false });
   overlay.addEventListener("mousedown", onMouseDown);
   overlay.addEventListener("mousemove", onMouseMove);
@@ -109,10 +218,11 @@ function showZoom(img: HTMLImageElement) {
   overlay.addEventListener("dblclick", onDoubleClick);
   overlay.addEventListener("click", onOverlayClick);
   document.addEventListener("keydown", onKey);
+}
 
-  requestAnimationFrame(() => {
-    overlay?.classList.add("active");
-  });
+function finalizeOverlay() {
+  applyTransform(false);
+  requestAnimationFrame(() => overlay?.classList.add("active"));
 }
 
 function closeZoom() {
@@ -130,8 +240,9 @@ function closeZoom() {
     finished = true;
     el.remove();
     overlay = null;
-    zoomedImg = null;
+    zoomedTarget = null;
     scaleEl = null;
+    baseSize = null;
     closing = false;
     isPointerDown = false;
     isDragging = false;
@@ -142,33 +253,89 @@ function closeZoom() {
 }
 
 /**
- * 取得 scale=1 时图片在视口中的实际渲染尺寸。
- * CSS 给了 max-width:90vw / max-height:90vh + object-fit:contain，
- * 所以 base 尺寸 = naturalSize 经 contain 适配到 90vw × 90vh 的结果。
+ * 普通 <img> 的 base 尺寸：CSS 给了 max-width:90vw / max-height:90vh + object-fit:contain，
+ * 经 contain 适配后的实际显示尺寸。
  */
-function getBaseSize(): { w: number; h: number } | null {
-  if (!zoomedImg || !zoomedImg.naturalWidth || !zoomedImg.naturalHeight) return null;
+function computeImageBaseSize(img: HTMLImageElement): { w: number; h: number } | null {
+  if (!img.naturalWidth || !img.naturalHeight) return null;
   const maxW = window.innerWidth * 0.9;
   const maxH = window.innerHeight * 0.9;
-  const ratio = Math.min(
-    maxW / zoomedImg.naturalWidth,
-    maxH / zoomedImg.naturalHeight,
-    1 // 不上采样：小图保持原始尺寸
-  );
-  return { w: zoomedImg.naturalWidth * ratio, h: zoomedImg.naturalHeight * ratio };
+  const ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
+  return { w: img.naturalWidth * ratio, h: img.naturalHeight * ratio };
 }
 
 /**
- * 把 tx, ty 夹紧到当前缩放下"图片不会被拖出视口"的范围。
- * - 当某轴向缩放后尺寸 ≤ 视口：该轴 maxOffset = 0 → 强制居中
- * - 否则：允许在 ±(超出量/2) 内平移
- * 这正是 macOS 预览 / Figma / Photos 的行为。
+ * 图表 wrap 的 base 尺寸：直接读 layout 后的 bounding rect。
+ * 在 transform 应用前测量，避免被 scale 反向放大/缩小。
  */
+function measureDiagramBaseSize(wrap: HTMLElement) {
+  const measure = () => {
+    if (!wrap.isConnected) return;
+    // 暂时清空 transform，避免影响测量
+    const prev = wrap.style.transform;
+    wrap.style.transform = "none";
+    const rect = wrap.getBoundingClientRect();
+    wrap.style.transform = prev;
+    if (rect.width > 0 && rect.height > 0) {
+      baseSize = { w: rect.width, h: rect.height };
+      applyTransform(false);
+    }
+  };
+  // 第一次：layout 完成后立即测
+  requestAnimationFrame(measure);
+  // 第二次：若内含 <img>（PlantUML），等图片加载完再补一次
+  wrap.querySelectorAll("img").forEach((img) => {
+    if (!img.complete) {
+      img.addEventListener("load", () => requestAnimationFrame(measure), { once: true });
+    }
+  });
+}
+
+/**
+ * 给克隆 SVG 内的 id 加上唯一前缀，并同步更新 url(#id) / href="#id" 引用。
+ * 防止和原 DOM 中相同 id 冲突（mermaid 在多次渲染后会有重复 id）。
+ */
+let svgScopeCounter = 0;
+function rewriteSvgIds(wrap: HTMLElement) {
+  const svgs = wrap.querySelectorAll("svg");
+  svgs.forEach((svg) => {
+    const scope = `zoom-${++svgScopeCounter}-`;
+    const idMap = new Map<string, string>();
+    svg.querySelectorAll("[id]").forEach((el) => {
+      const oldId = el.getAttribute("id")!;
+      const newId = scope + oldId;
+      idMap.set(oldId, newId);
+      el.setAttribute("id", newId);
+    });
+    if (idMap.size === 0) return;
+
+    // url(#x) 引用：扫所有元素的所有属性
+    const urlRe = /url\(#([^)]+)\)/g;
+    const all = svg.querySelectorAll("*");
+    [svg, ...Array.from(all)].forEach((el) => {
+      Array.from(el.attributes).forEach((attr) => {
+        if (attr.value.includes("url(#")) {
+          const replaced = attr.value.replace(urlRe, (_m, id) => {
+            const mapped = idMap.get(id);
+            return mapped ? `url(#${mapped})` : `url(#${id})`;
+          });
+          if (replaced !== attr.value) el.setAttribute(attr.name, replaced);
+        }
+        // href / xlink:href = "#id"
+        if ((attr.name === "href" || attr.name === "xlink:href") && attr.value.startsWith("#")) {
+          const id = attr.value.slice(1);
+          const mapped = idMap.get(id);
+          if (mapped) el.setAttribute(attr.name, "#" + mapped);
+        }
+      });
+    });
+  });
+}
+
 function clampPan() {
-  const base = getBaseSize();
-  if (!base) return;
-  const dispW = base.w * scale;
-  const dispH = base.h * scale;
+  if (!baseSize) return;
+  const dispW = baseSize.w * scale;
+  const dispH = baseSize.h * scale;
   const maxTx = Math.max(0, (dispW - window.innerWidth) / 2);
   const maxTy = Math.max(0, (dispH - window.innerHeight) / 2);
   tx = Math.min(maxTx, Math.max(-maxTx, tx));
@@ -176,10 +343,10 @@ function clampPan() {
 }
 
 function applyTransform(animated: boolean) {
-  if (!zoomedImg) return;
+  if (!zoomedTarget) return;
   clampPan();
-  zoomedImg.style.transition = animated ? "transform 0.2s ease" : "none";
-  zoomedImg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+  zoomedTarget.style.transition = animated ? "transform 0.2s ease" : "none";
+  zoomedTarget.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
   if (scaleEl) {
     scaleEl.textContent = `${Math.round(scale * 100)}%`;
   }
@@ -199,16 +366,8 @@ function clampScale(s: number) {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
 }
 
-/**
- * 以视口位置 (mx, my) 为锚点，把当前 scale 乘上 factor。
- * 推导：transform-origin = center center，容器为视口。
- *   设容器中心为 (cx, cy)，图片中心视口位置 = (cx + tx, cy + ty)。
- *   M = (mx, my) 相对图片中心位移 D = M - center。
- *   新 scale 后想保持 M 对应的原图点不动，需要 new_t = D - D*ratio + t...
- * 简化得：new_t = mx_off - (mx_off - tx) * ratio   （mx_off = mx - cx）
- */
 function zoomAt(mx: number, my: number, factor: number) {
-  if (!zoomedImg) return;
+  if (!zoomedTarget) return;
   const newScale = clampScale(scale * factor);
   const ratio = newScale / scale;
   if (ratio === 1) return;
@@ -230,16 +389,13 @@ function zoomAtCenter(factor: number) {
 
 function onWheel(e: WheelEvent) {
   e.preventDefault();
-  // 归一化滚轮：deltaMode 1=line, 2=page；折算成 pixel 量级
   const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
   const delta = e.deltaY * unit;
-  // 平滑指数曲线
   const factor = Math.exp(-delta * 0.0015);
   zoomAt(e.clientX, e.clientY, factor);
 }
 
 function onMouseDown(e: MouseEvent) {
-  // 仅响应主键
   if (e.button !== 0) return;
   isPointerDown = true;
   isDragging = false;
@@ -264,7 +420,6 @@ function onMouseMove(e: MouseEvent) {
 function onMouseUp() {
   if (!isPointerDown) return;
   isPointerDown = false;
-  // isDragging 由 onOverlayClick 在随后的 click 事件中消费清零，避免拖动收尾误触发关闭
 }
 
 function onDoubleClick(e: MouseEvent) {
@@ -277,14 +432,12 @@ function onDoubleClick(e: MouseEvent) {
 }
 
 function onOverlayClick(e: MouseEvent) {
-  // 拖动收尾产生的 click 不关闭
   if (isDragging) {
     isDragging = false;
     return;
   }
-  // 点击图片本身不关闭（除非 1x 状态下点空白）
   const target = e.target as HTMLElement;
-  if (target === zoomedImg) return;
+  if (zoomedTarget && (target === zoomedTarget || zoomedTarget.contains(target))) return;
   if (target.closest(".image-zoom-toolbar")) return;
   closeZoom();
 }
