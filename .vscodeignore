@@ -12,3 +12,4 @@ publish.sh
 **/*.vsix
 test-preview.md
 package-lock.json
+temp/**
