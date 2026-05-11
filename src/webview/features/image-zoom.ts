@@ -117,6 +117,15 @@ function showImageZoom(img: HTMLImageElement) {
     "load",
     () => {
       baseSize = computeImageBaseSize(cloned);
+      // 启用矢量/位图重栅格化模式：缩放时改 width/height，让浏览器从原始解码数据按目标分辨率插值，
+      // 避免 transform:scale 拉伸 layer 快照导致的二次模糊。
+      // SVG 通过 <img> 加载时无损；PNG/JPG 在原图分辨率范围内清晰，超过原图分辨率才会出现位图本身的物理上限模糊。
+      if (baseSize) {
+        vectorInner = cloned;
+        vectorBase = baseSize;
+        cloned.style.maxWidth = "none";
+        cloned.style.maxHeight = "none";
+      }
       applyTransform(false);
     },
     { once: true }
