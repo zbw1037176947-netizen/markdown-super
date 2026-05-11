@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1] - 2026-05-11
+
+### Fixed
+
+- **图表放大模糊** — Mermaid / PlantUML 放大查看时不再用 CSS `transform: scale()`（会把 SVG 栅格化为位图再拉伸），改为直接改写 SVG / `<img>` 的 `width`/`height`，浏览器从矢量数据按目标分辨率重新栅格化，任意倍率都清晰；`transform` 仅承担平移
+- 自动解除 wrap 与内层的 `max-width` / `max-height` 限制（先 fit 再解除），避免 PlantUML 这种通过 `<img src=".svg">` 加载的图反弹到原生大尺寸
+
 ## [0.3.0] - 2026-05-09
 
 ### Added
