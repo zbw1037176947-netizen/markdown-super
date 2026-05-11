@@ -342,6 +342,34 @@ Webview --> User : 显示预览
 
 ![Large placeholder](https://placehold.co/1600x900/png)
 
+### PNG 放大清晰度测试（高分辨率 + 文字 / 复杂细节）
+
+> 期望：放大到 300% ~ 500% 时，原图分辨率范围内的细节（文字、纹理）应该明显清晰，不再是模糊的双线性插值；超过原图物理分辨率才会糊。
+
+**4K 文字密集 PNG（4000×3000）** — 字体边缘应清晰：
+
+![PNG 4K text](https://placehold.co/4000x3000/png?text=Zoom+test+%E2%80%94+4000x3000+PNG+with+lots+of+small+text%0A%0AThe+quick+brown+fox+jumps+over+the+lazy+dog%0A0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ)
+
+**Wikimedia 高清照片（Apollo 17 拍摄的地球，3000×3002）** — 复杂纹理 + 稳定 CDN：
+
+![Earth from Apollo 17](https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg)
+
+**普通分辨率 PNG（800×600）** — 对照组，放大超出原图后应明显糊（位图物理上限）：
+
+![Small PNG](https://placehold.co/800x600/png?text=Small+800x600+PNG)
+
+### SVG 浏览测试（应当无损放大）
+
+> 期望：SVG 无论放大到多大都完全清晰（矢量数据）。
+
+**Wikimedia SVG（Tiger，经典复杂矢量）**：
+
+![SVG Tiger](https://upload.wikimedia.org/wikipedia/commons/f/fd/Ghostscript_Tiger.svg)
+
+**简单几何 SVG（data URI / base64）** — 离线也能加载，验证 data URI 路径：
+
+![Inline SVG](data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA0MDAgMzAwJz48cmVjdCB3aWR0aD0nNDAwJyBoZWlnaHQ9JzMwMCcgZmlsbD0nIzAyODhEMScvPjxjaXJjbGUgY3g9JzIwMCcgY3k9JzE1MCcgcj0nODAnIGZpbGw9JyNmZmYnLz48dGV4dCB4PScyMDAnIHk9JzE2MCcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMjQnIGZpbGw9JyMwMjg4RDEnIHRleHQtYW5jaG9yPSdtaWRkbGUnPlNWRyBpbmxpbmU8L3RleHQ+PC9zdmc+)
+
 ### 本地图片（粘贴测试）
 
 在编辑器里截图后 Ctrl+V 粘贴，图片应该保存到 `./assets/` 目录并自动插入链接。
