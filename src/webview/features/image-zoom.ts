@@ -22,6 +22,11 @@ let scaleEl: HTMLElement | null = null;
 let baseSize: { w: number; h: number } | null = null;
 let closing = false;
 
+// 矢量缩放模式：直接改 SVG/img 的 width/height，避免 CSS scale 引起的栅格化模糊。
+// 仅 translate 用于平移。
+let vectorInner: HTMLElement | null = null;
+let vectorBase: { w: number; h: number } | null = null;
+
 let scale = 1;
 let tx = 0;
 let ty = 0;
@@ -142,6 +147,16 @@ function showDiagramZoom(diagramRoot: HTMLElement) {
   zoomedTarget = wrap;
   overlay!.insertBefore(wrap, overlay!.firstChild);
 
+  // 选定可矢量缩放的内层元素：SVG 或 <img>（PlantUML 走 .svg URL，浏览器也能矢量重栅格化）。
+  // markmap 是 HTML 树，没有矢量重绘价值，退回 CSS scale 模式。
+  const inner = wrap.querySelector(":scope > svg, :scope > img") as HTMLElement | null;
+  if (inner) {
+    vectorInner = inner;
+    // 注意：先不解除任何尺寸限制，让浏览器按 CSS 的 max-width/height 自动 fit。
+    // 等 measureDiagramBaseSize 拿到 fit 后的真实显示尺寸（vectorBase）再解除限制，
+    // 否则像 PlantUML 这种通过 <img src=".svg"> 加载的图会还原成原生大尺寸。
+  }
+
   // SVG / HTML 子树同步入 DOM 即可量尺寸；img 子节点等加载完再补一次
   measureDiagramBaseSize(wrap);
   finalizeOverlay();
@@ -243,6 +258,8 @@ function closeZoom() {
     zoomedTarget = null;
     scaleEl = null;
     baseSize = null;
+    vectorInner = null;
+    vectorBase = null;
     closing = false;
     isPointerDown = false;
     isDragging = false;
@@ -278,8 +295,24 @@ function measureDiagramBaseSize(wrap: HTMLElement) {
     wrap.style.transform = prev;
     if (rect.width > 0 && rect.height > 0) {
       baseSize = { w: rect.width, h: rect.height };
-      applyTransform(false);
     }
+    // 同步记录矢量内层元素的基础显示尺寸（用于按倍率重写 width/height）
+    if (vectorInner && vectorInner.isConnected && !vectorBase) {
+      const ir = vectorInner.getBoundingClientRect();
+      if (ir.width > 0 && ir.height > 0) {
+        vectorBase = { w: ir.width, h: ir.height };
+        // 锁定到 fit 后的尺寸，再解除 wrap 与 inner 的所有 max 约束，
+        // 让后续 applyTransform 写入的 width/height 不再被 CSS 截断。
+        vectorInner.style.width = `${ir.width}px`;
+        vectorInner.style.height = `${ir.height}px`;
+        vectorInner.style.maxWidth = "none";
+        vectorInner.style.maxHeight = "none";
+        wrap.style.maxWidth = "none";
+        wrap.style.maxHeight = "none";
+        wrap.style.overflow = "visible";
+      }
+    }
+    applyTransform(false);
   };
   // 第一次：layout 完成后立即测
   requestAnimationFrame(measure);
@@ -346,7 +379,21 @@ function applyTransform(animated: boolean) {
   if (!zoomedTarget) return;
   clampPan();
   zoomedTarget.style.transition = animated ? "transform 0.2s ease" : "none";
-  zoomedTarget.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+  if (vectorInner && vectorBase) {
+    // 矢量模式：直接放大 SVG/img 自身尺寸，浏览器从矢量数据重新栅格化 → 任意倍率清晰；
+    // transform 只承担平移。
+    const w = vectorBase.w * scale;
+    const h = vectorBase.h * scale;
+    vectorInner.style.width = `${w}px`;
+    vectorInner.style.height = `${h}px`;
+    if (vectorInner.tagName.toLowerCase() === "svg") {
+      vectorInner.setAttribute("width", String(w));
+      vectorInner.setAttribute("height", String(h));
+    }
+    zoomedTarget.style.transform = `translate(${tx}px, ${ty}px)`;
+  } else {
+    zoomedTarget.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+  }
   if (scaleEl) {
     scaleEl.textContent = `${Math.round(scale * 100)}%`;
   }
